@@ -102,11 +102,13 @@ class CheckInfo:
         self.work_sheet.write(0, 3, label='HardBinNumber')
         self.work_sheet.write(0, 4, label='SoftBinNumber')
         self.work_sheet.write(0, 5, label='Period(ns)')
+        self.work_sheet.write(0, 6, label='MCG CLK(ns)')
         self.work_sheet.col(1).width = 256 * 20
         self.work_sheet.col(2).width = 256 * 15
         self.work_sheet.col(3).width = 256 * 15
         self.work_sheet.col(4).width = 256 * 15
         self.work_sheet.col(5).width = 256 * 12
+        self.work_sheet.col(6).width = 256 * 12
 
     def __test_table_process(self, flow_table_index, flow_table_info):
         self.work_sheet.write(flow_table_index + 1, 0, label=flow_table_info['Opcode'])
@@ -187,13 +189,20 @@ class CheckInfo:
             pt = ParseTIM()
             pt.read_timing(os.path.join(flow_table_directory, timing_name.split(',')[0] + '.txt'))
             timing_period = pt.get_timing_info()
+            mcg_clk_dic = pt.get_clk_info()
             period_value = self.__spec_calculation(timing_period, self.ac_spec_dict, category_name, selector_name)
             self.work_sheet.write(flow_table_index + 1, 5, label=eval(format_str(period_value)))
+            if mcg_clk_dic.__len__() >0:
+                tmpStr = ''
+                for k,v in mcg_clk_dic.items():
+                    mcg_clk_dic[k]=self.__spec_calculation(v, self.ac_spec_dict, category_name, selector_name)
+                    tmpStr = tmpStr + k +":"+mcg_clk_dic[k]+";"
+                self.work_sheet.write(flow_table_index + 1, 6, label=tmpStr)
         else:
             pass
 
     def __power_process_and_get_count(self, flow_table_directory, flow_table_info, flow_table_index):
-        dps_index = 6
+        dps_index = 7#6
         dps_count = 0
         test_suite_name = flow_table_info['Parameter']
         if self.test_instance_dict[test_suite_name]['DC Category'] != '':
@@ -309,6 +318,6 @@ class CheckInfo:
                     self.__test_table_process(flow_table_index, flow_table_info)
                     self.__period_process(flow_table_directory, flow_table_index, flow_table_info)
                     dps_count = self.__power_process_and_get_count(flow_table_directory, flow_table_info, flow_table_index)
-                    #self.__pattern_process(dps_count, flow_table_index, flow_table_info)
+                    self.__pattern_process(dps_count, flow_table_index, flow_table_info)
                 except Exception as e:
                     print(flow_table_index,flow_table_info)
