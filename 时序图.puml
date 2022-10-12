@@ -1,0 +1,34 @@
+@startuml
+database database
+activate database
+actor CheckInfo
+activate CheckInfo
+activate GUI
+CheckInfo <- GUI: get device file path
+CheckInfo -> CheckInfo: file read and process
+activate JobListParser
+CheckInfo -> JobListParser: reading and get job info
+deactivate JobListParser
+CheckInfo -> GUI: set job list
+CheckInfo <- GUI: get loaded job
+activate FlowTableParser
+CheckInfo -> FlowTableParser: reading and get flow info
+deactivate FlowTableParser
+activate InstanceParser
+CheckInfo -> InstanceParser: reading and get instance info
+deactivate InstanceParser
+activate SpecParser
+CheckInfo -> SpecParser: reading and get spec info
+deactivate SpecParser
+activate LevelParser
+CheckInfo -> LevelParser: reading and get level info
+deactivate LevelParser
+activate TimingParser
+CheckInfo -> TimingParser: reading and get timing info
+deactivate TimingParser
+activate PatternParser
+CheckInfo -> PatternParser: reading and get pattern info
+deactivate PatternParser
+CheckInfo -> CheckInfo: data processing and output
+
+@enduml

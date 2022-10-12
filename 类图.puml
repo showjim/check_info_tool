@@ -1,0 +1,19 @@
+@startuml
+class TK
+class Application
+TK <|-- Application
+class Meau
+Application <-- Meau
+class CheckInfo
+SpecParser <|-- DCSpecParser
+SpecParser <|-- ACSpecParser
+Application <.. CheckInfo
+JobListParser <.. CheckInfo
+FlowTableParser <.. CheckInfo
+DCSpecParser <.. CheckInfo
+ACSpecParser <.. CheckInfo
+CheckInfo ..> InstanceParser
+CheckInfo ..> LevelParser
+CheckInfo ..> TimingParser
+CheckInfo ..> PatternParser
+@enduml
