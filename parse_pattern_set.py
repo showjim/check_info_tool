@@ -12,7 +12,7 @@ class ParsePatternSet:
             for line_index, pattern_line in enumerate(pattern_set_file):
                 if line_index > 2:
                     line_list = pattern_line.split('\t')
-                    if line_list[1] == '':
+                    if len(line_list) == 0 or line_list[1] == '':
                         break
                     else:
                         pattern_set_name = line_list[1]
