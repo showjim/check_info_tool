@@ -20,7 +20,7 @@ class ParseFlowTable:
                     line_list = flow_table_line.split('\t')
                     if line_list[6] == '':
                         break
-                    elif line_list[6] == 'Test' and line_list[5] == '':
+                    elif (line_list[6] == 'Test' or line_list[6] == "Test-defer-limits") and line_list[5] == '':
                         tmp_dict = get_flow_content(line_list)
                         if tmp_dict["HardBin"] == "" or tmp_dict["SoftBin"] == "":
                             line_list = lines[line_index+1].split('\t')
