@@ -38,7 +38,7 @@ class ParsePatternSet:
                             else:
                                 pass
                         else:
-                            main_pattern_name = main_pattern_name.split('.')[0]
+                            main_pattern_name = main_pattern_name #.split('.')[0]
                         main_pattern_list.append(main_pattern_name)
                         self.__pattern_set_dict[pattern_set_name.upper()] = main_pattern_list
                 elif line_index == 0:

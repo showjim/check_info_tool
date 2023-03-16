@@ -16,6 +16,7 @@ import xlwt
 import xlrd
 import traceback
 
+VERSION = "Beta 1.1.1"
 
 class LastFlowInfo:
     dc_spec_name = None
@@ -156,7 +157,7 @@ class CheckInfo:
         test_suite_name = flow_table_info['Parameter']
         pattern_name = self.test_instance_dict[test_suite_name]['Pattern']
         if pattern_name != '':
-            pattern_index = 6 + dps_count
+            pattern_index = 7 + dps_count
             self.work_sheet.write(0, pattern_index, label='PatternName')
             self.work_sheet.write(0, pattern_index + 1, label='CycleCount')
             self.work_sheet.col(pattern_index).width = 256 * 40
@@ -164,7 +165,7 @@ class CheckInfo:
             pattern_index = pattern_index + 1
             if ',' not in pattern_name:
                 try:
-                    cycle_count =0# self.pattern_cycle_dict[pattern_name]
+                    cycle_count = self.pattern_cycle_dict[pattern_name]
                 except:
                     os.system('pause')
                 self.work_sheet.write(flow_table_index + 1, pattern_index, label=str(cycle_count))
@@ -281,13 +282,8 @@ class CheckInfo:
             test_instance_list = [os.path.join(flow_table_directory, test_instance_name + '.txt') for test_instance_name
                                   in
                                   test_instance_list if test_instance_list]
-            pti = ParseTestInstance()
-            if test_instance_list:
-                for test_instance_name in test_instance_list:
-                    pti.read_test_instance(test_instance_name)
-            else:
-                pass
-            self.test_instance_dict = pti.get_instance_info()
+
+            self.pattern_set_dict = {}
             if LastFlowInfo.pattern_set_name != pattern_set_name:
                 pps = ParsePatternSet()
                 pps.read_pattern_set(pattern_set_name, self.pattern_path)
@@ -296,6 +292,22 @@ class CheckInfo:
                 LastFlowInfo.pattern_set_name = pattern_set_name
             else:
                 pass
+
+            pti = ParseTestInstance()
+            if test_instance_list:
+                for test_instance_name in test_instance_list:
+                    pti.read_test_instance(test_instance_name, self.pattern_set_dict)
+            else:
+                pass
+            self.test_instance_dict = pti.get_instance_info()
+            # if LastFlowInfo.pattern_set_name != pattern_set_name:
+            #     pps = ParsePatternSet()
+            #     pps.read_pattern_set(pattern_set_name, self.pattern_path)
+            #     self.pattern_set_dict = pps.get_pattern_set_info()
+            #     self.pattern_cycle_dict = pps.get_pattern_cycle_info()
+            #     LastFlowInfo.pattern_set_name = pattern_set_name
+            # else:
+            #     pass
             if LastFlowInfo.dc_spec_name != dc_spec_name:
                 pds = ParseDCSpec()
                 pds.read_dc_spec(dc_spec_name)
