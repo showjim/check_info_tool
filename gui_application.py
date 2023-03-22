@@ -4,6 +4,7 @@ from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
 
+VERSION = "Beta 1.1.1"
 
 class Application(tk.Tk):
 
@@ -15,7 +16,7 @@ class Application(tk.Tk):
         self.sub_root_flag = False
 
     def createWidgets(self):
-        self.title('Check Info V2.00')
+        self.title('Check Info Tool '+ VERSION)
         self.columnconfigure(0, minsize=50)
         self.entry_var = tk.StringVar()
         self.power_var = tk.StringVar()

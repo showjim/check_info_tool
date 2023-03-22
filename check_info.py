@@ -16,7 +16,6 @@ import xlwt
 import xlrd
 import traceback
 
-VERSION = "Beta 1.1.1"
 
 class LastFlowInfo:
     dc_spec_name = None
