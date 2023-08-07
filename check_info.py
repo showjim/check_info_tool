@@ -1,6 +1,7 @@
 from parse_flow_table import ParseFlowTable
 from parse_dc_spec import ParseDCSpec
 from parse_ac_spec import ParseACSpec
+from parse_glob_spec import ParseGlobalSpec
 from parse_level import ParsePinLevel
 from parse_timing import ParseTIM
 from parse_job_list import ParseJobList
@@ -19,6 +20,7 @@ import traceback
 
 class LastFlowInfo:
     dc_spec_name = None
+    glob_spec_name = None
     ac_spec_name = None
     pattern_set_name = None
 
@@ -125,14 +127,17 @@ class CheckInfo:
         for target_index, target_value in enumerate(target_list):
             if '_' in target_value:
                 target_value_strip = target_value.replace('_', '', 1).replace(' ','')
-                if self.spec_version == '3.0':
-                    try:
-                        spec_type = spec_dict[target_value_strip.upper()]['SELECTORS ' + selector_name.upper()]
-                    except:
-                        os.system('pause')
+                if target_value_strip in self.glob_spec_dict.keys():
+                    result_value = self.glob_spec_dict[target_value_strip]
                 else:
-                    spec_type = spec_dict[target_value_strip.upper()]['SELECTOR VAL']
-                result_value = spec_dict[target_value_strip][category_name.upper() + ' ' + spec_type]
+                    if self.spec_version == '3.0':
+                        try:
+                            spec_type = spec_dict[target_value_strip.upper()]['SELECTORS ' + selector_name.upper()]
+                        except:
+                            os.system('pause')
+                    else:
+                        spec_type = spec_dict[target_value_strip.upper()]['SELECTOR VAL']
+                    result_value = spec_dict[target_value_strip][category_name.upper() + ' ' + spec_type]
                 result_value = self.__spec_calculation(result_value, spec_dict, category_name, selector_name)
                 if sample_list:
                     if target_index == sample_len:
@@ -266,11 +271,19 @@ class CheckInfo:
             dc_spec_name_replace_space = os.path.join(flow_table_directory,
                                                       dc_spec_name_temp.replace(' ', '%20') + '.txt')
             dc_spec_name = dc_spec_name if os.path.exists(dc_spec_name) else dc_spec_name_replace_space
+
             ac_spec_name_temp = self.job_list_dict[pre_flow_name]['AC Spec']
             ac_spec_name = os.path.join(flow_table_directory, ac_spec_name_temp + '.txt')
             ac_spec_name_replace_space = os.path.join(flow_table_directory,
                                                       ac_spec_name_temp.replace(' ', '%20') + '.txt')
             ac_spec_name = ac_spec_name if os.path.exists(ac_spec_name) else ac_spec_name_replace_space
+
+            # add global spec support
+            glob_spec_name_temp = self.job_list_dict[pre_flow_name]['Global Spec']
+            glob_spec_name = os.path.join(flow_table_directory, glob_spec_name_temp + '.txt')
+            glob_spec_name_replace_space = os.path.join(flow_table_directory,
+                                                      glob_spec_name_temp.replace(' ', '%20') + '.txt')
+            glob_spec_name = glob_spec_name if os.path.exists(glob_spec_name) else glob_spec_name_replace_space
 
             pattern_set_name_temp = self.job_list_dict[pre_flow_name]['PatternSet']
             pattern_set_name = os.path.join(flow_table_directory, pattern_set_name_temp + '.txt')
@@ -314,6 +327,15 @@ class CheckInfo:
                 LastFlowInfo.dc_spec_name = dc_spec_name
             else:
                 pass
+
+            if LastFlowInfo.glob_spec_name != glob_spec_name:
+                pds = ParseGlobalSpec()
+                pds.read_spec(glob_spec_name)
+                self.glob_spec_dict = pds.get_info()
+                LastFlowInfo.glob_spec_name = glob_spec_name
+            else:
+                pass
+
             if LastFlowInfo.ac_spec_name != ac_spec_name:
                 pas = ParseACSpec()
                 pas.read_ac_spec(ac_spec_name)
