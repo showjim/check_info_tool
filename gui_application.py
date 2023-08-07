@@ -169,4 +169,5 @@ class Menu:
         messagebox.showinfo('--', 'Please Wait')
 
     def about(self):
-        messagebox.showinfo('About', 'Thank you for using!\nAny suggestions please mail chao.zhou@teradyne.com')
+        messagebox.showinfo('About', 'Thank you for using!\nCreated by Ivan Ding, maintained by Chao Zhou.'
+                                     '\nAny suggestions please mail zhouchao486@gmail.com')
