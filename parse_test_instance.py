@@ -6,7 +6,7 @@ class ParseTestInstance:
     def read_test_instance(self, test_instance_path, pattern_set_dict):
         with open(test_instance_path, 'r') as test_instance_file:
             if len(pattern_set_dict) == 0:
-                pat_pattern = re.compile(r'\S+_burst\S*', re.IGNORECASE)
+                pat_pattern = re.compile(r'\S+\.patx', re.IGNORECASE)
                 for line_index, test_instance_line in enumerate(test_instance_file):
                     if line_index > 3:
                         line_list = test_instance_line.split('\t')

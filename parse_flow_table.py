@@ -28,6 +28,7 @@ class ParseFlowTable:
                             if tmp_next_line_dict["Opcode"] == 'Use-Limit' and tmp_next_line_dict["HardBin"] != "" and tmp_next_line_dict["SoftBin"] != "":
                                 tmp_dict["HardBin"] = tmp_next_line_dict["HardBin"]
                                 tmp_dict["SoftBin"] = tmp_next_line_dict["SoftBin"]
+                                tmp_dict["TestNumber"] = tmp_next_line_dict["TestNumber"]
                             else:
                                 print("No SortBin test found: " + flow_table_line)
                         self.__test_suite_list.append(tmp_dict)

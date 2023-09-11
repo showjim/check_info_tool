@@ -35,6 +35,8 @@ class CheckInfo:
         self.work_sheet = None
         self.text = None
         self.last_flow_info = LastFlowInfo()
+        self.glob_spec_dict = {}
+        self.MAX_DSP_CNT = 0
 
     def read_device(self, device_path, power_order_path, pattern_path, text):
         self.text = text
@@ -76,7 +78,7 @@ class CheckInfo:
     def run(self, flow_table_set):
         try:
             time = datetime.datetime.now()
-            current_time = str(time.month) + str(time.day) + str(time.hour) + str(time.minute) + str(time.second)
+            current_time = str(time.year) + str(time.month) + str(time.day) + "-" + str(time.hour) + str(time.minute) + str(time.second)
             work_book = xlwt.Workbook()
             for flow_name in flow_table_set:
                 self.work_sheet = work_book.add_sheet(flow_name, cell_overwrite_ok=True)
@@ -171,7 +173,8 @@ class CheckInfo:
                 try:
                     cycle_count = self.pattern_cycle_dict[pattern_name]
                 except:
-                    os.system('pause')
+                    self.__put_data_log("Warning: not cycle info found.")
+                    # os.system('pause')
                 self.work_sheet.write(flow_table_index + 1, pattern_index, label=str(cycle_count))
                 pattern_index = pattern_index + 1
                 main_pattern_list = self.pattern_set_dict[pattern_name]
@@ -195,8 +198,13 @@ class CheckInfo:
             pt.read_timing(os.path.join(flow_table_directory, timing_name.split(',')[0] + '.txt'))
             timing_period = pt.get_timing_info()
             mcg_clk_dic = pt.get_clk_info()
-            period_value = self.__spec_calculation(timing_period, self.ac_spec_dict, category_name, selector_name)
-            self.work_sheet.write(flow_table_index + 1, 5, label=eval(format_str(period_value)))
+            try:
+                period_value = self.__spec_calculation(timing_period, self.ac_spec_dict, category_name, selector_name)
+                self.work_sheet.write(flow_table_index + 1, 5, label=eval(format_str(period_value)))
+            except Exception as e:
+                self.work_sheet.write(flow_table_index + 1, 5, label="Error: cannot parse AC variables: " + timing_period + "=" + period_value)
+                # self.__put_data_log("Error: cannot parse AC variables: " + timing_period)
+                # print("Error: cannot parse AC variables: " + timing_period)
             if mcg_clk_dic.__len__() >0:
                 tmpStr = ''
                 for k,v in mcg_clk_dic.items():
@@ -253,6 +261,10 @@ class CheckInfo:
 
         return dps_count
 
+    def save_max_col(self, col_cnt:int):
+        if self.MAX_DSP_CNT < col_cnt:
+            self.MAX_DSP_CNT = col_cnt
+
     def __run_each_flow(self, flow_path):
         flow_table_directory = '/'.join(flow_path.split('/')[:-1])
         flow_table = flow_path.split('/')[-1]
@@ -262,6 +274,7 @@ class CheckInfo:
             self.__put_data_log('Flow Table Path Cannot be Empty, Please Check!')
             return
         else:
+            flow_path = flow_path.replace(' ', '%20')
             pft = ParseFlowTable()
             pft.read_flow_table(flow_path)
             flow_table_info_list = pft.get_test_suite_info()
@@ -296,12 +309,15 @@ class CheckInfo:
                                   test_instance_list if test_instance_list]
 
             self.pattern_set_dict = {}
-            if LastFlowInfo.pattern_set_name != pattern_set_name:
+            if LastFlowInfo.pattern_set_name != pattern_set_name: # and LastFlowInfo.pattern_set_name is not None:
                 pps = ParsePatternSet()
-                pps.read_pattern_set(pattern_set_name, self.pattern_path)
-                self.pattern_set_dict = pps.get_pattern_set_info()
-                self.pattern_cycle_dict = pps.get_pattern_cycle_info()
-                LastFlowInfo.pattern_set_name = pattern_set_name
+                try:
+                    pps.read_pattern_set(pattern_set_name, self.pattern_path)
+                    self.pattern_set_dict = pps.get_pattern_set_info()
+                    self.pattern_cycle_dict = pps.get_pattern_cycle_info()
+                    LastFlowInfo.pattern_set_name = pattern_set_name
+                except Exception as e:
+                    self.__put_data_log("Warning: cannot read PatternSet, please check it!")
             else:
                 pass
 
@@ -330,9 +346,12 @@ class CheckInfo:
 
             if LastFlowInfo.glob_spec_name != glob_spec_name:
                 pds = ParseGlobalSpec()
-                pds.read_spec(glob_spec_name)
-                self.glob_spec_dict = pds.get_info()
-                LastFlowInfo.glob_spec_name = glob_spec_name
+                try:
+                    pds.read_spec(glob_spec_name)
+                    self.glob_spec_dict = pds.get_info()
+                    LastFlowInfo.glob_spec_name = glob_spec_name
+                except Exception as e:
+                    self.__put_data_log("Warning: cannot read Global Specs, please check it!")
             else:
                 pass
 
@@ -351,6 +370,18 @@ class CheckInfo:
                     self.__test_table_process(flow_table_index, flow_table_info)
                     self.__period_process(flow_table_directory, flow_table_index, flow_table_info)
                     dps_count = self.__power_process_and_get_count(flow_table_directory, flow_table_info, flow_table_index)
-                    self.__pattern_process(dps_count, flow_table_index, flow_table_info)
+                    # self.__pattern_process(dps_count, flow_table_index, flow_table_info)
+                    self.save_max_col(dps_count)
                 except Exception as e:
+                    self.__put_data_log(str(flow_table_index) + " - " + flow_table_info.__str__())
+                    print(flow_table_index,flow_table_info)
+
+            # Without Pandas, first write instance name/power, then write pat to align column
+            for flow_table_index, flow_table_info in enumerate(flow_table_info_list):
+                try:
+                    # if flow_table_index > self.MAX_COL:
+                    #     self.MAX_COL = flow_table_index
+                    self.__pattern_process(self.MAX_DSP_CNT, flow_table_index, flow_table_info)
+                except Exception as e:
+                    self.__put_data_log(str(flow_table_index) + " - " + flow_table_info.__str__())
                     print(flow_table_index,flow_table_info)
