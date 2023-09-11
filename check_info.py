@@ -37,8 +37,25 @@ class CheckInfo:
         self.last_flow_info = LastFlowInfo()
         self.glob_spec_dict = {}
         self.MAX_DSP_CNT = 0
+        self.pattern_set_dict = {}
+        self.dc_spec_dict = {}
+
+    def reset(self):
+        self.power_order_path = ''
+        self.pattern_path = ''
+        self.job_list_dict = ''
+        self.flow_table_set = set()
+        # self.device_directory = temp_directory
+        self.work_sheet = None
+        self.text = None
+        self.last_flow_info = LastFlowInfo()
+        self.glob_spec_dict = {}
+        self.MAX_DSP_CNT = 0
+        self.pattern_set_dict = {}
+        self.dc_spec_dict = {}
 
     def read_device(self, device_path, power_order_path, pattern_path, text):
+        self.reset()
         self.text = text
         if power_order_path != '':
             self.__put_data_log("Import Power Order File: " + power_order_path)
@@ -136,7 +153,8 @@ class CheckInfo:
                         try:
                             spec_type = spec_dict[target_value_strip.upper()]['SELECTORS ' + selector_name.upper()]
                         except:
-                            os.system('pause')
+                            self.__put_data_log("Error: Can not parse spec variable: " + target_value_strip)
+                            # os.system('pause')
                     else:
                         spec_type = spec_dict[target_value_strip.upper()]['SELECTOR VAL']
                     result_value = spec_dict[target_value_strip][category_name.upper() + ' ' + spec_type]
@@ -304,18 +322,18 @@ class CheckInfo:
                                                           pattern_set_name_temp.replace(' ', '%20') + '.txt')
             pattern_set_name = pattern_set_name if os.path.exists(pattern_set_name) else pattern_set_name_replace_space
             test_instance_list = self.job_list_dict[pre_flow_name]['TestInstanceList']
-            test_instance_list = [os.path.join(flow_table_directory, test_instance_name + '.txt') for test_instance_name
+            test_instance_list = [os.path.join(flow_table_directory, test_instance_name.replace(' ', '%20') + '.txt') for test_instance_name
                                   in
                                   test_instance_list if test_instance_list]
 
-            self.pattern_set_dict = {}
-            if LastFlowInfo.pattern_set_name != pattern_set_name: # and LastFlowInfo.pattern_set_name is not None:
+            # self.pattern_set_dict = {}
+            if self.last_flow_info.pattern_set_name != pattern_set_name: # and LastFlowInfo.pattern_set_name is not None:
                 pps = ParsePatternSet()
                 try:
                     pps.read_pattern_set(pattern_set_name, self.pattern_path)
                     self.pattern_set_dict = pps.get_pattern_set_info()
                     self.pattern_cycle_dict = pps.get_pattern_cycle_info()
-                    LastFlowInfo.pattern_set_name = pattern_set_name
+                    self.last_flow_info.pattern_set_name = pattern_set_name
                 except Exception as e:
                     self.__put_data_log("Warning: cannot read PatternSet, please check it!")
             else:
@@ -336,32 +354,32 @@ class CheckInfo:
             #     LastFlowInfo.pattern_set_name = pattern_set_name
             # else:
             #     pass
-            if LastFlowInfo.dc_spec_name != dc_spec_name:
+            if self.last_flow_info.dc_spec_name != dc_spec_name:
                 pds = ParseDCSpec()
                 pds.read_dc_spec(dc_spec_name)
                 self.dc_spec_dict = pds.get_dc_info()
-                LastFlowInfo.dc_spec_name = dc_spec_name
+                self.last_flow_info.dc_spec_name = dc_spec_name
             else:
                 pass
 
-            if LastFlowInfo.glob_spec_name != glob_spec_name:
+            if self.last_flow_info.glob_spec_name != glob_spec_name:
                 pds = ParseGlobalSpec()
                 try:
                     pds.read_spec(glob_spec_name)
                     self.glob_spec_dict = pds.get_info()
-                    LastFlowInfo.glob_spec_name = glob_spec_name
+                    self.last_flow_info.glob_spec_name = glob_spec_name
                 except Exception as e:
                     self.__put_data_log("Warning: cannot read Global Specs, please check it!")
             else:
                 pass
 
-            if LastFlowInfo.ac_spec_name != ac_spec_name:
+            if self.last_flow_info.ac_spec_name != ac_spec_name:
                 pas = ParseACSpec()
                 pas.read_ac_spec(ac_spec_name)
                 self.ac_spec_dict = pas.get_ac_info()
                 ac_spec_version = pas.get_spec_version()
                 self.spec_version = ac_spec_version
-                LastFlowInfo.ac_spec_name = ac_spec_name
+                self.last_flow_info.ac_spec_name = ac_spec_name
             else:
                 pass
             self.__init()
