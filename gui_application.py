@@ -16,9 +16,11 @@ class Application(tk.Tk):
         self.sub_root_flag = False
 
     def createWidgets(self):
-        self.title('Check Info Tool '+ _VERSION)
-        self.columnconfigure(0, weight=1) #, minsize=50
-        self.rowconfigure(0, weight=1) #, minsize=50
+        self.title('Check Info Tool ' + _VERSION)
+        self.rowconfigure(0, weight=0, minsize=30)
+        self.rowconfigure(1, weight=1, minsize=50)
+        self.columnconfigure(0, weight=1, minsize=50)
+        self.columnconfigure(1, weight=0)
         self.entry_var = tk.StringVar()
         self.power_var = tk.StringVar()
         self.pattern_var = tk.StringVar()
@@ -26,33 +28,40 @@ class Application(tk.Tk):
         self.key_var.set('UltraFLEX Plus')
         items = ['UltraFLEX Plus', 'UltraFLEX', 'J750']
 
-        top_frame = tk.Frame(self)#, height=80)
-        content_frame = tk.Frame(self)
+        top_frame = tk.Frame(self, borderwidth=1)#, height=80)
+        content_frame = tk.Frame(self, borderwidth=1)
+
+        top_frame.rowconfigure(0, weight=0)
+        top_frame.columnconfigure(0, weight=0)
+        content_frame.rowconfigure(0, weight=1)
+        content_frame.columnconfigure(0, weight=1)
+
         # top_frame.pack(side=tk.TOP)
-        top_frame.grid(row=0, column=0)
+        top_frame.grid(row=0, column=0, sticky=tk.W + tk.S + tk.E + tk.N)
         # content_frame.pack(side=tk.TOP)
-        content_frame.grid(row=1, column=0)
+        content_frame.grid(row=1, column=0, sticky=tk.W + tk.S + tk.E + tk.N)
 
         label = tk.Label(top_frame, text='Test Program:')
         entry = tk.Entry(top_frame, textvariable=self.entry_var, width=40)
         load_button = tk.Button(top_frame, command=self.import_flow, text='Load', width=8)
         run_button = tk.Button(top_frame, command=self.run, text='Run') #, width=8
         combobox = ttk.Combobox(top_frame, values=items, textvariable=self.key_var, width=12)
-        label.grid(row=0, column=0, sticky=tk.W + tk.S + tk.E + tk.N, padx=5, pady=5)
-        entry.grid(row=0, column=1, sticky=tk.W + tk.S + tk.E + tk.N, padx=5, pady=5)
-        combobox.grid(row=0, column=2, sticky=tk.W + tk.S + tk.E + tk.N, padx=5, pady=5)
-        load_button.grid(row=0, column=3, sticky=tk.W + tk.S + tk.E + tk.N, padx=5, pady=5)
-        run_button.grid(row=0, column=4, sticky=tk.W + tk.S + tk.E + tk.N, padx=5, pady=5)
+        label.grid(row=0, column=0, padx=5, pady=5)
+        entry.grid(row=0, column=1, padx=5, pady=5)
+        combobox.grid(row=0, column=2, padx=5, pady=5)
+        load_button.grid(row=0, column=3, padx=5, pady=5)
+        run_button.grid(row=0, column=4, padx=5, pady=5)
 
         right_bar = tk.Scrollbar(content_frame, orient=tk.VERTICAL)
         bottom_bar = tk.Scrollbar(content_frame, orient=tk.HORIZONTAL)
         self.textbox = tk.Text(content_frame, yscrollcommand=right_bar.set, xscrollcommand=bottom_bar.set)
+        self.textbox.config()
         # self.textbox.pack(side=tk.LEFT, fill=tk.BOTH)
-        self.textbox.grid(row=1, column=0, sticky=tk.W + tk.S + tk.E + tk.N)
+        self.textbox.grid(row=0, column=0, sticky=tk.W + tk.S + tk.E + tk.N)
         # right_bar.pack(side=tk.RIGHT, fill=tk.Y)
-        right_bar.grid(row=1, column=1, sticky=tk.W + tk.S + tk.E + tk.N)
+        right_bar.grid(row=0, column=1, sticky=tk.S + tk.N)
         # bottom_bar.pack(side=tk.BOTTOM, fill=tk.X)
-        bottom_bar.grid(row=2, column=0, sticky=tk.W + tk.S + tk.E + tk.N)
+        bottom_bar.grid(row=1, column=0, sticky=tk.W + tk.E)
         right_bar.config(command=self.textbox.yview)
         bottom_bar.config(command=self.textbox.xview)
 
