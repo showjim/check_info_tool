@@ -39,6 +39,7 @@ class CheckInfo:
         self.MAX_DSP_CNT = 0
         self.pattern_set_dict = {}
         self.dc_spec_dict = {}
+        self.platform = 'UltraFLEX'
 
     def reset(self):
         self.power_order_path = ''
@@ -53,10 +54,12 @@ class CheckInfo:
         self.MAX_DSP_CNT = 0
         self.pattern_set_dict = {}
         self.dc_spec_dict = {}
+        self.platform = 'UltraFLEX'
 
-    def read_device(self, device_path, power_order_path, pattern_path, text):
+    def read_device(self, device_path, power_order_path, pattern_path, platform, text):
         self.reset()
         self.text = text
+        self.platform = platform
         if power_order_path != '':
             self.__put_data_log("Import Power Order File: " + power_order_path)
         self.power_order_path = power_order_path

@@ -17,24 +17,27 @@ class Application(tk.Tk):
 
     def createWidgets(self):
         self.title('Check Info Tool '+ _VERSION)
-        self.columnconfigure(0, minsize=50)
+        self.columnconfigure(0, weight=1) #, minsize=50
+        self.rowconfigure(0, weight=1) #, minsize=50
         self.entry_var = tk.StringVar()
         self.power_var = tk.StringVar()
         self.pattern_var = tk.StringVar()
         self.key_var = tk.StringVar()
-        self.key_var.set('Ultra Flex')
-        items = ['Ultra Flex']
+        self.key_var.set('UltraFLEX Plus')
+        items = ['UltraFLEX Plus', 'UltraFLEX', 'J750']
 
-        top_frame = tk.Frame(self, height=80)
+        top_frame = tk.Frame(self)#, height=80)
         content_frame = tk.Frame(self)
-        top_frame.pack(side=tk.TOP)
-        content_frame.pack(side=tk.TOP)
+        # top_frame.pack(side=tk.TOP)
+        top_frame.grid(row=0, column=0)
+        # content_frame.pack(side=tk.TOP)
+        content_frame.grid(row=1, column=0)
 
         label = tk.Label(top_frame, text='Test Program:')
-        entry = tk.Entry(top_frame, width=40, textvariable=self.entry_var)
-        load_button = tk.Button(top_frame, width=8, command=self.import_flow, text='Load')
-        run_button = tk.Button(top_frame, width=8, command=self.run, text='Run')
-        combobox = ttk.Combobox(top_frame, width=10, values=items, textvariable=self.key_var)
+        entry = tk.Entry(top_frame, textvariable=self.entry_var, width=40)
+        load_button = tk.Button(top_frame, command=self.import_flow, text='Load', width=8)
+        run_button = tk.Button(top_frame, command=self.run, text='Run') #, width=8
+        combobox = ttk.Combobox(top_frame, values=items, textvariable=self.key_var, width=12)
         label.grid(row=0, column=0, sticky=tk.W + tk.S + tk.E + tk.N, padx=5, pady=5)
         entry.grid(row=0, column=1, sticky=tk.W + tk.S + tk.E + tk.N, padx=5, pady=5)
         combobox.grid(row=0, column=2, sticky=tk.W + tk.S + tk.E + tk.N, padx=5, pady=5)
@@ -44,9 +47,12 @@ class Application(tk.Tk):
         right_bar = tk.Scrollbar(content_frame, orient=tk.VERTICAL)
         bottom_bar = tk.Scrollbar(content_frame, orient=tk.HORIZONTAL)
         self.textbox = tk.Text(content_frame, yscrollcommand=right_bar.set, xscrollcommand=bottom_bar.set)
-        right_bar.pack(side=tk.RIGHT, fill=tk.Y)
-        bottom_bar.pack(side=tk.BOTTOM, fill=tk.X)
-        self.textbox.pack(side=tk.LEFT, fill=tk.BOTH)
+        # self.textbox.pack(side=tk.LEFT, fill=tk.BOTH)
+        self.textbox.grid(row=1, column=0, sticky=tk.W + tk.S + tk.E + tk.N)
+        # right_bar.pack(side=tk.RIGHT, fill=tk.Y)
+        right_bar.grid(row=1, column=1, sticky=tk.W + tk.S + tk.E + tk.N)
+        # bottom_bar.pack(side=tk.BOTTOM, fill=tk.X)
+        bottom_bar.grid(row=2, column=0, sticky=tk.W + tk.S + tk.E + tk.N)
         right_bar.config(command=self.textbox.yview)
         bottom_bar.config(command=self.textbox.xview)
 
@@ -90,7 +96,7 @@ class Application(tk.Tk):
         if not self.sub_root_flag:
             self.sub_root_flag = True
             self.put_data_log('===============================START===============================')
-            self.check_info.read_device(self.entry_var.get(), self.power_var.get(), self.pattern_var.get(), self.textbox)
+            self.check_info.read_device(self.entry_var.get(), self.power_var.get(), self.pattern_var.get(), self.key_var.get(), self.textbox)
             job_list_dict = self.check_info.get_job_list()
             sub_root = tk.Tk()
             sub_root.title('Select Flow Table')

@@ -3,10 +3,13 @@ import re
 
 class ParseTestInstance:
 
-    def read_test_instance(self, test_instance_path, pattern_set_dict):
+    def read_test_instance(self, test_instance_path, pattern_set_dict, platform:str='UltraFLEX Plus'):
         with open(test_instance_path, 'r') as test_instance_file:
             if len(pattern_set_dict) == 0:
-                pat_pattern = re.compile(r'\S+\.patx', re.IGNORECASE)
+                if platform == 'UltraFLEX Plus':
+                    pat_pattern = re.compile(r'\S+\.patx', re.IGNORECASE)
+                else:
+                    pat_pattern = re.compile(r'\S+\.pat', re.IGNORECASE)
                 for line_index, test_instance_line in enumerate(test_instance_file):
                     if line_index > 3:
                         line_list = test_instance_line.split('\t')
