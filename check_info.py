@@ -394,6 +394,7 @@ class CheckInfo:
                     # self.__pattern_process(dps_count, flow_table_index, flow_table_info)
                     self.save_max_col(dps_count)
                 except Exception as e:
+                    self.__put_data_log(str(e))
                     self.__put_data_log(str(flow_table_index) + " - " + flow_table_info.__str__())
                     print(flow_table_index,flow_table_info)
 
@@ -404,5 +405,6 @@ class CheckInfo:
                     #     self.MAX_COL = flow_table_index
                     self.__pattern_process(self.MAX_DSP_CNT, flow_table_index, flow_table_info)
                 except Exception as e:
+                    self.__put_data_log(str(e))
                     self.__put_data_log(str(flow_table_index) + " - " + flow_table_info.__str__())
                     print(flow_table_index,flow_table_info)
