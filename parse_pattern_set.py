@@ -1,11 +1,13 @@
-import re
+import os, re
 from subprocess import run
 
 
 class ParsePatternSet:
 
-    def read_pattern_set(self, pattern_set_path, pattern_file_path):
+    def read_pattern_set(self, pattern_set_path:str, pattern_file_path):
         pattern = re.compile(r'(\S+)_X\d_\S+', re.IGNORECASE)
+        if os.path.isfile(pattern_set_path) == False:
+            pattern_set_path = pattern_set_path.replace('%20',' ')
         with open(pattern_set_path, 'r') as pattern_set_file:
             main_pattern_list = []
             last_pattern_set_name = ''

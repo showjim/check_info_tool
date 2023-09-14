@@ -155,7 +155,7 @@ class CheckInfo:
                     if self.spec_version == '3.0':
                         try:
                             spec_type = spec_dict[target_value_strip.upper()]['SELECTORS ' + selector_name.upper()]
-                        except:
+                        except Exception as e:
                             self.__put_data_log("Error: Can not parse spec variable: " + target_value_strip)
                             # os.system('pause')
                     else:
@@ -216,7 +216,7 @@ class CheckInfo:
         selector_name = self.test_instance_dict[test_suite_name]['AC Selector']
         if timing_name != '':
             pt = ParseTIM()
-            pt.read_timing(os.path.join(flow_table_directory, timing_name.split(',')[0] + '.txt'))
+            pt.read_timing(os.path.join(flow_table_directory, timing_name.split(',')[0] + '.txt'), self.platform)
             timing_period = pt.get_timing_info()
             mcg_clk_dic = pt.get_clk_info()
             try:
@@ -297,7 +297,7 @@ class CheckInfo:
         else:
             flow_path = flow_path.replace(' ', '%20')
             pft = ParseFlowTable()
-            pft.read_flow_table(flow_path)
+            pft.read_flow_table(flow_path, self.platform)
             flow_table_info_list = pft.get_test_suite_info()
 
             dc_spec_name_temp = self.job_list_dict[pre_flow_name]['DC Spec']
@@ -345,7 +345,7 @@ class CheckInfo:
             pti = ParseTestInstance()
             if test_instance_list:
                 for test_instance_name in test_instance_list:
-                    pti.read_test_instance(test_instance_name, self.pattern_set_dict)
+                    pti.read_test_instance(test_instance_name, self.pattern_set_dict, self.platform)
             else:
                 pass
             self.test_instance_dict = pti.get_instance_info()
@@ -359,7 +359,7 @@ class CheckInfo:
             #     pass
             if self.last_flow_info.dc_spec_name != dc_spec_name:
                 pds = ParseDCSpec()
-                pds.read_dc_spec(dc_spec_name)
+                pds.read_dc_spec(dc_spec_name, self.platform)
                 self.dc_spec_dict = pds.get_dc_info()
                 self.last_flow_info.dc_spec_name = dc_spec_name
             else:
@@ -368,7 +368,7 @@ class CheckInfo:
             if self.last_flow_info.glob_spec_name != glob_spec_name:
                 pds = ParseGlobalSpec()
                 try:
-                    pds.read_spec(glob_spec_name)
+                    pds.read_spec(glob_spec_name, self.platform)
                     self.glob_spec_dict = pds.get_info()
                     self.last_flow_info.glob_spec_name = glob_spec_name
                 except Exception as e:
@@ -378,7 +378,7 @@ class CheckInfo:
 
             if self.last_flow_info.ac_spec_name != ac_spec_name:
                 pas = ParseACSpec()
-                pas.read_ac_spec(ac_spec_name)
+                pas.read_ac_spec(ac_spec_name, self.platform)
                 self.ac_spec_dict = pas.get_ac_info()
                 ac_spec_version = pas.get_spec_version()
                 self.spec_version = ac_spec_version

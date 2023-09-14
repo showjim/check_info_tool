@@ -1,4 +1,4 @@
-import re
+import re, os
 
 
 def get_spec_info(line_list, key_list):
@@ -13,13 +13,23 @@ def get_spec_info(line_list, key_list):
 
 class ParseSpec:
 
-    def read_spec(self, spec_path):
+    def read_spec(self, spec_path:str, platform:str):
+        if os.path.isfile(spec_path) == False:
+            spec_path = spec_path.replace('%20',' ')
         with open(spec_path, 'r') as spec_file:
             key_list = []
             for line_index, spec_line in enumerate(spec_file):
                 line_list = spec_line.split('\t')
                 if line_index == 0:
-                    version_pattern = re.compile(r'version=(\S+?):')
+                    # version_pattern = re.compile(r'version=(\S+?):')
+                    # if re.search(version_pattern, spec_line):
+                    #     self.__spec_version = re.search(version_pattern, spec_line).group(1)
+                    # else:
+                    #     self.__spec_version = "1.0"
+                    if "UFLEX" in platform:
+                        version_pattern = re.compile(r'version=(\S+?):')
+                    else: #J750
+                        version_pattern = re.compile(r'DFF (\d+(\.\d+)?)')
                     self.__spec_version = re.search(version_pattern, spec_line).group(1)
                 if line_index == 2:
                     for row_index, line_element in enumerate(line_list):

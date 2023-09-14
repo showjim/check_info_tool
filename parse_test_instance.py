@@ -1,9 +1,11 @@
-import re
+import os, re
 
 
 class ParseTestInstance:
 
-    def read_test_instance(self, test_instance_path, pattern_set_dict, platform:str='UltraFLEX Plus'):
+    def read_test_instance(self, test_instance_path:str, pattern_set_dict, platform:str='UltraFLEX Plus'):
+        if os.path.isfile(test_instance_path) == False:
+            test_instance_path = test_instance_path.replace('%20',' ')
         with open(test_instance_path, 'r') as test_instance_file:
             if len(pattern_set_dict) == 0:
                 if platform == 'UltraFLEX Plus':
