@@ -40,6 +40,8 @@ class CheckInfo:
         self.pattern_set_dict = {}
         self.dc_spec_dict = {}
         self.platform = 'UltraFLEX'
+        self.tsb_dict = {}
+        self.clock_dic = {}
 
     def reset(self):
         self.power_order_path = ''
@@ -55,6 +57,8 @@ class CheckInfo:
         self.pattern_set_dict = {}
         self.dc_spec_dict = {}
         self.platform = 'UltraFLEX'
+        self.tsb_dict = {}
+        self.clock_dic = {}
 
     def read_device(self, device_path, power_order_path, pattern_path, platform, text):
         self.reset()
@@ -125,14 +129,14 @@ class CheckInfo:
         self.work_sheet.write(0, 2, label='TestNumber')
         self.work_sheet.write(0, 3, label='HardBinNumber')
         self.work_sheet.write(0, 4, label='SoftBinNumber')
-        self.work_sheet.write(0, 5, label='Period(ns)')
-        self.work_sheet.write(0, 6, label='MCG CLK(ns)')
+        # self.work_sheet.write(0, 5, label='Period(ns)')
+        # self.work_sheet.write(0, 6, label='MCG CLK(ns)')
         self.work_sheet.col(1).width = 256 * 20
         self.work_sheet.col(2).width = 256 * 15
         self.work_sheet.col(3).width = 256 * 15
         self.work_sheet.col(4).width = 256 * 15
-        self.work_sheet.col(5).width = 256 * 12
-        self.work_sheet.col(6).width = 256 * 12
+        # self.work_sheet.col(5).width = 256 * 12
+        # self.work_sheet.col(6).width = 256 * 12
 
     def __test_table_process(self, flow_table_index, flow_table_info):
         self.work_sheet.write(flow_table_index + 1, 0, label=flow_table_info['Opcode'])
@@ -180,63 +184,124 @@ class CheckInfo:
                 pass
         return target
 
-    def __pattern_process(self, dps_count, flow_table_index, flow_table_info):
+    def __extract_per_clk(self, pattern_name: str, timing_name: str, category_name: str, selector_name: str):
+        # get tset from pattern
+        ppat = ParsePatternSet()
+        ppat.read_tset_from_pattern(self.pattern_path, pattern_name)
+        tset_name = ppat.get_pattern_tset()
+
+        timing_period = self.tsb_dict[timing_name][tset_name.upper()]
+        mcg_clk_dic = self.clock_dic[timing_name][tset_name.upper()]
+
+        period_value = ""
+        try:
+            period_value = self.__spec_calculation(timing_period, self.ac_spec_dict, category_name, selector_name)
+            period_val = str(eval(format_str(period_value)))
+        except Exception as e:
+            period_val = "Error: cannot parse AC variables: " + timing_period + "=" + period_value
+            # self.__put_data_log("Error: cannot parse AC variables: " + timing_period)
+            # print("Error: cannot parse AC variables: " + timing_period)
+
+        clk_val = ""
+        if mcg_clk_dic.__len__() > 0:
+            tmpStr = ''
+            for k, v in mcg_clk_dic.items():
+                mcg_clk_dic[k] = self.__spec_calculation(v, self.ac_spec_dict, category_name, selector_name)
+                tmpStr = tmpStr + k + ":" + mcg_clk_dic[k] + ";"
+            clk_val = tmpStr
+        return period_val, clk_val
+
+    def __pattern_period_clk_process(self, dps_count, flow_table_index, flow_table_info, flow_table_directory):
         test_suite_name = flow_table_info['Parameter']
         pattern_name = self.test_instance_dict[test_suite_name]['Pattern']
-        if pattern_name != '':
-            pattern_index = 7 + dps_count
-            self.work_sheet.write(0, pattern_index, label='PatternName')
-            self.work_sheet.write(0, pattern_index + 1, label='CycleCount')
-            self.work_sheet.col(pattern_index).width = 256 * 40
-            self.work_sheet.write(flow_table_index + 1, pattern_index, label=pattern_name)
-            pattern_index = pattern_index + 1
-            if ',' not in pattern_name:
-                try:
-                    cycle_count = self.pattern_cycle_dict[pattern_name]
-                except:
-                    self.__put_data_log("Warning: not cycle info found.")
-                    # os.system('pause')
-                self.work_sheet.write(flow_table_index + 1, pattern_index, label=str(cycle_count))
-                pattern_index = pattern_index + 1
-                main_pattern_list = self.pattern_set_dict[pattern_name]
-                for main_pattern_index, main_pattern_name in enumerate(main_pattern_list):
-                    self.work_sheet.write(flow_table_index + 1, pattern_index + main_pattern_index,
-                                          label=main_pattern_name)
-                    self.work_sheet.write(0, pattern_index + main_pattern_index,
-                                          label='MainPattern_' + str(main_pattern_index + 1))
-                    self.work_sheet.col(pattern_index + main_pattern_index).width = 256 * 40
-            else:
-                self.__put_data_log('Cannot Support Multi Burst Pattern Parse!')
-                self.__put_data_log(' Multi Burst Pattern is: ' + pattern_name)
-
-    def __period_process(self, flow_table_directory, flow_table_index, flow_table_info):
-        test_suite_name = flow_table_info['Parameter']
         timing_name = self.test_instance_dict[test_suite_name]['TimeSet']
         category_name = self.test_instance_dict[test_suite_name]['AC Category']
         selector_name = self.test_instance_dict[test_suite_name]['AC Selector']
-        if timing_name != '':
+        if pattern_name != '' and timing_name != '':
+            # get timing & tset info
             pt = ParseTIM()
             pt.read_timing(os.path.join(flow_table_directory, timing_name.split(',')[0] + '.txt'), self.platform)
-            timing_period = pt.get_timing_info()
-            mcg_clk_dic = pt.get_clk_info()
-            try:
-                period_value = self.__spec_calculation(timing_period, self.ac_spec_dict, category_name, selector_name)
-                self.work_sheet.write(flow_table_index + 1, 5, label=eval(format_str(period_value)))
-            except Exception as e:
-                self.work_sheet.write(flow_table_index + 1, 5, label="Error: cannot parse AC variables: " + timing_period + "=" + period_value)
-                # self.__put_data_log("Error: cannot parse AC variables: " + timing_period)
-                # print("Error: cannot parse AC variables: " + timing_period)
-            if mcg_clk_dic.__len__() >0:
-                tmpStr = ''
-                for k,v in mcg_clk_dic.items():
-                    mcg_clk_dic[k]=self.__spec_calculation(v, self.ac_spec_dict, category_name, selector_name)
-                    tmpStr = tmpStr + k +":"+mcg_clk_dic[k]+";"
-                self.work_sheet.write(flow_table_index + 1, 6, label=tmpStr)
+            self.tsb_dict[timing_name] = pt.get_timing_info()
+            self.clock_dic[timing_name] = pt.get_clk_info()
+
+            # print pattern name & period
+            pattern_index = 5 + dps_count
+            self.work_sheet.write(0, pattern_index, label='PatternName_0')
+            self.work_sheet.write(0, pattern_index + 1, label='Period_0')
+            self.work_sheet.write(0, pattern_index + 2, label='Clock_0')
+            self.work_sheet.col(pattern_index).width = 256 * 40
+            if ',' not in pattern_name:
+                # get period & clk
+                try:
+                    period_val, clk_val = self.__extract_per_clk(pattern_name, timing_name, category_name, selector_name)
+                except Exception as e:
+                    period_val, clk_val = "", ""
+                    self.__put_data_log("Error: cannot read pattern file: " + pattern_name)
+                    print("Error: cannot read pattern file: " + pattern_name)
+                self.work_sheet.write(flow_table_index + 1, pattern_index, label=pattern_name)
+                self.work_sheet.write(flow_table_index + 1, pattern_index + 1, label=period_val) #xxxx
+                self.work_sheet.write(flow_table_index + 1, pattern_index + 2, label=clk_val)
+            else:
+                pattern_list = pattern_name.split(",")
+                for pattern_index, pattern_name in enumerate(pattern_list):
+                    pattern_index_new = 5 + dps_count + 3 * pattern_index
+                    # get period & clk
+                    try:
+                        period_val, clk_val = self.__extract_per_clk(pattern_name, timing_name, category_name,
+                                                                     selector_name)
+                    except Exception as e:
+                        period_val, clk_val = "", ""
+                        self.__put_data_log("Error: cannot read pattern file: " + pattern_name)
+                        print("Error: cannot read pattern file: " + pattern_name)
+                    self.work_sheet.write(0, pattern_index_new,
+                                          label='PatternName_' + str(pattern_index))
+                    self.work_sheet.write(flow_table_index + 1, pattern_index_new,
+                                          label=pattern_name)
+                    self.work_sheet.col(pattern_index_new).width = 256 * 40
+
+                    self.work_sheet.write(0, pattern_index_new + 1,
+                                          label='Period_' + str(pattern_index))
+                    self.work_sheet.write(flow_table_index + 1, pattern_index_new + 1,
+                                          label=period_val) #xxxx
+
+                    self.work_sheet.write(0, pattern_index_new + 2,
+                                          label='Clock_' + str(pattern_index))
+                    self.work_sheet.write(flow_table_index + 1, pattern_index_new + 2,
+                                          label=clk_val)  # xxxx
         else:
             pass
 
+    # def __period_process(self, flow_table_directory, flow_table_index, flow_table_info):
+    #     test_suite_name = flow_table_info['Parameter']
+    #     timing_name = self.test_instance_dict[test_suite_name]['TimeSet']
+    #     category_name = self.test_instance_dict[test_suite_name]['AC Category']
+    #     selector_name = self.test_instance_dict[test_suite_name]['AC Selector']
+    #     if timing_name != '':
+    #         pt = ParseTIM()
+    #         pt.read_timing(os.path.join(flow_table_directory, timing_name.split(',')[0] + '.txt'), self.platform)
+    #         self.tsb_dict[timing_name] = pt.get_timing_info()
+    #         self.clock_dic[timing_name] = pt.get_clk_info()
+    #
+    #         timing_period = self.tsb_dict[timing_name][tset_name]
+    #         mcg_clk_dic = self.clock_dic[timing_name][tset_name]
+    #         try:
+    #             period_value = self.__spec_calculation(timing_period, self.ac_spec_dict, category_name, selector_name)
+    #             self.work_sheet.write(flow_table_index + 1, 5, label=eval(format_str(period_value)))
+    #         except Exception as e:
+    #             self.work_sheet.write(flow_table_index + 1, 5, label="Error: cannot parse AC variables: " + timing_period + "=" + period_value)
+    #             # self.__put_data_log("Error: cannot parse AC variables: " + timing_period)
+    #             # print("Error: cannot parse AC variables: " + timing_period)
+    #         if mcg_clk_dic.__len__() > 0:
+    #             tmpStr = ''
+    #             for k,v in mcg_clk_dic.items():
+    #                 mcg_clk_dic[k]=self.__spec_calculation(v, self.ac_spec_dict, category_name, selector_name)
+    #                 tmpStr = tmpStr + k +":"+mcg_clk_dic[k]+";"
+    #             self.work_sheet.write(flow_table_index + 1, 6, label=tmpStr)
+    #     else:
+    #         pass
+
     def __power_process_and_get_count(self, flow_table_directory, flow_table_info, flow_table_index):
-        dps_index = 7#6
+        dps_index = 5#6
         dps_count = 0
         test_suite_name = flow_table_info['Parameter']
         if self.test_instance_dict[test_suite_name]['DC Category'] != '':
@@ -333,7 +398,7 @@ class CheckInfo:
             if self.last_flow_info.pattern_set_name != pattern_set_name: # and LastFlowInfo.pattern_set_name is not None:
                 pps = ParsePatternSet()
                 try:
-                    pps.read_pattern_set(pattern_set_name, self.pattern_path)
+                    pps.read_pattern_set(pattern_set_name, self.pattern_path, self.platform)
                     self.pattern_set_dict = pps.get_pattern_set_info()
                     self.pattern_cycle_dict = pps.get_pattern_cycle_info()
                     self.last_flow_info.pattern_set_name = pattern_set_name
@@ -345,7 +410,10 @@ class CheckInfo:
             pti = ParseTestInstance()
             if test_instance_list:
                 for test_instance_name in test_instance_list:
-                    pti.read_test_instance(test_instance_name, self.pattern_set_dict, self.platform)
+                    try:
+                        pti.read_test_instance(test_instance_name, self.pattern_set_dict, self.platform)
+                    except Exception as e:
+                        print(str(e))
             else:
                 pass
             self.test_instance_dict = pti.get_instance_info()
@@ -389,11 +457,12 @@ class CheckInfo:
             for flow_table_index, flow_table_info in enumerate(flow_table_info_list):
                 try:
                     self.__test_table_process(flow_table_index, flow_table_info)
-                    self.__period_process(flow_table_directory, flow_table_index, flow_table_info)
+                    # self.__period_process(flow_table_directory, flow_table_index, flow_table_info)
                     dps_count = self.__power_process_and_get_count(flow_table_directory, flow_table_info, flow_table_index)
                     # self.__pattern_process(dps_count, flow_table_index, flow_table_info)
                     self.save_max_col(dps_count)
                 except Exception as e:
+                    self.__put_data_log("Error fonud in power process:")
                     self.__put_data_log(str(e))
                     self.__put_data_log(str(flow_table_index) + " - " + flow_table_info.__str__())
                     print(flow_table_index,flow_table_info)
@@ -401,10 +470,11 @@ class CheckInfo:
             # Without Pandas, first write instance name/power, then write pat to align column
             for flow_table_index, flow_table_info in enumerate(flow_table_info_list):
                 try:
-                    # if flow_table_index > self.MAX_COL:
-                    #     self.MAX_COL = flow_table_index
-                    self.__pattern_process(self.MAX_DSP_CNT, flow_table_index, flow_table_info)
+                    if flow_table_info["Parameter"] == "DNA_READ_PCM_TEST":
+                        print("OK")
+                    self.__pattern_period_clk_process(self.MAX_DSP_CNT, flow_table_index, flow_table_info, flow_table_directory)
                 except Exception as e:
+                    self.__put_data_log("Error fonud in pattern/timing process:")
                     self.__put_data_log(str(e))
                     self.__put_data_log(str(flow_table_index) + " - " + flow_table_info.__str__())
                     print(flow_table_index,flow_table_info)

@@ -3,27 +3,34 @@ import os, re
 
 class ParseTestInstance:
 
+    def find_pat_path(self, pat_pattern, test_instance_line, line_list):
+        pattern_info_list = re.findall(pat_pattern, test_instance_line)
+        pattern_info = ''
+        if pattern_info_list:
+            pattern_info = ','.join(pattern_info_list)
+        self.__test_instance_dict[line_list[1].upper()] = self.__get_instance_content(line_list, pattern_info)
+
+
     def read_test_instance(self, test_instance_path:str, pattern_set_dict, platform:str='UltraFLEX Plus'):
         if os.path.isfile(test_instance_path) == False:
             test_instance_path = test_instance_path.replace('%20',' ')
+        if platform == 'UltraFLEX Plus':
+            pat_pattern = re.compile(r'\t([\S ]+\.patx)', re.IGNORECASE)
+        else:
+            pat_pattern = re.compile(r'\t([\S ]+\.pat)', re.IGNORECASE)
         with open(test_instance_path, 'r') as test_instance_file:
             if len(pattern_set_dict) == 0:
-                if platform == 'UltraFLEX Plus':
-                    pat_pattern = re.compile(r'\S+\.patx', re.IGNORECASE)
-                else:
-                    pat_pattern = re.compile(r'\S+\.pat', re.IGNORECASE)
                 for line_index, test_instance_line in enumerate(test_instance_file):
                     if line_index > 3:
                         line_list = test_instance_line.split('\t')
                         if line_list[1] == '':
                             break
                         else:
-                            pattern_info_list = re.findall(pat_pattern, test_instance_line)
-                            pattern_info = ''
-                            if pattern_info_list:
-                                pattern_info = ','.join(pattern_info_list)
-                            self.__test_instance_dict[line_list[1].upper()] = self.__get_instance_content(line_list,
-                                                                                                          pattern_info.upper())
+                            if "UltraFLEX" in platform:
+                                test_instance_line = "\t".join(line_list[:144])
+                            else:
+                                test_instance_line = "\t".join(line_list[:93])
+                            self.find_pat_path(pat_pattern, test_instance_line, line_list)
                     else:
                         pass
             else:
@@ -36,11 +43,14 @@ class ParseTestInstance:
                             pattern_info = ''
                             for i in range(14, 20):
                                 if line_list[i].upper() in pattern_set_dict.keys():
-                                    pattern_info = line_list[i]
+                                    # pattern_info = line_list[i]
+                                    pattern_info = ','.join(pattern_set_dict[line_list[i].upper()])
                                     break
-
-                            self.__test_instance_dict[line_list[1].upper()] = self.__get_instance_content(line_list,
-                                                                                                          pattern_info.upper())
+                            if pattern_info != "":
+                                self.__test_instance_dict[line_list[1].upper()] = self.__get_instance_content(line_list,
+                                                                                                              pattern_info)
+                            else:
+                                self.find_pat_path(pat_pattern, test_instance_line, line_list)
                     else:
                         pass
 

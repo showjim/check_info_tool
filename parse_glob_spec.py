@@ -10,7 +10,7 @@ class ParseGlobalSpec():
             for line_index, spec_line in enumerate(spec_file):
                 line_list = spec_line.split('\t')
                 if line_index == 0:
-                    if "UFLEX" in platform:
+                    if "UltraFLEX" in platform:
                         version_pattern = re.compile(r'version=(\S+?):')
                     else:
                         version_pattern = re.compile(r'DFF (\d+(\.\d+)?)')

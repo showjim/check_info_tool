@@ -3,7 +3,7 @@ import os.path
 
 
 def get_flow_content(line_list, platform):
-    if "UFLEX" in platform:
+    if "UltraFLEX" in platform:
         flow_info = {'Opcode':line_list[6], 'Parameter':line_list[7].upper(), 'TestNumber':line_list[9],
                      'HardBin':line_list[16], 'SoftBin':line_list[18]}
     else: #J750
@@ -40,7 +40,7 @@ class ParseFlowTable:
                     elif line_list[6] == 'call' and line_list[5] == '':
                         filepath, filename = os.path.split(flow_path)
                         sub_flow_path = filepath + '/' + line_list[7] + '.txt'
-                        tmp = self.read_flow_table(sub_flow_path)
+                        tmp = self.read_flow_table(sub_flow_path, platform)
                         if tmp != None:
                             self.__test_suite_list.append(tmp)
                     else:

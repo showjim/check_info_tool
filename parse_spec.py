@@ -26,7 +26,7 @@ class ParseSpec:
                     #     self.__spec_version = re.search(version_pattern, spec_line).group(1)
                     # else:
                     #     self.__spec_version = "1.0"
-                    if "UFLEX" in platform:
+                    if "UltraFLEX" in platform:
                         version_pattern = re.compile(r'version=(\S+?):')
                     else: #J750
                         version_pattern = re.compile(r'DFF (\d+(\.\d+)?)')
