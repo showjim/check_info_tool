@@ -13,9 +13,9 @@ import tkinter as tk
 import os
 import re
 import datetime
-import xlwt
 import xlrd
 import traceback
+import xlsxwriter
 
 
 class LastFlowInfo:
@@ -103,13 +103,13 @@ class CheckInfo:
         try:
             time = datetime.datetime.now()
             current_time = str(time.year) + str(time.month) + str(time.day) + "-" + str(time.hour) + str(time.minute) + str(time.second)
-            work_book = xlwt.Workbook()
+            output_name = 'CheckInfo_' + current_time + '.xlsx'
+            work_book = xlsxwriter.Workbook(output_name)
             for flow_name in flow_table_set:
-                self.work_sheet = work_book.add_sheet(flow_name, cell_overwrite_ok=True)
+                self.work_sheet = work_book.add_worksheet(flow_name)
                 flow_path = self.device_directory + '/' + flow_name + '.txt'
                 self.__run_each_flow(flow_path)
-            output_name = 'CheckInfo_' + current_time + '.xls'
-            work_book.save(output_name)
+            work_book.close()
             self.__put_data_log('Output file path is: ' + output_name)
             self.__put_data_log('Execution successful!!!')
             self.__put_data_log('===============================END===============================')
@@ -124,26 +124,24 @@ class CheckInfo:
         self.text.update()
 
     def __init(self):
-        self.work_sheet.write(0, 0, label='Opcode')
-        self.work_sheet.write(0, 1, label='Parameter')
-        self.work_sheet.write(0, 2, label='TestNumber')
-        self.work_sheet.write(0, 3, label='HardBinNumber')
-        self.work_sheet.write(0, 4, label='SoftBinNumber')
-        # self.work_sheet.write(0, 5, label='Period(ns)')
-        # self.work_sheet.write(0, 6, label='MCG CLK(ns)')
-        self.work_sheet.col(1).width = 256 * 20
-        self.work_sheet.col(2).width = 256 * 15
-        self.work_sheet.col(3).width = 256 * 15
-        self.work_sheet.col(4).width = 256 * 15
-        # self.work_sheet.col(5).width = 256 * 12
-        # self.work_sheet.col(6).width = 256 * 12
+        self.work_sheet.write(0, 0, 'Opcode')
+        self.work_sheet.write(0, 1, 'Parameter')
+        self.work_sheet.write(0, 2, 'TestNumber')
+        self.work_sheet.write(0, 3, 'HardBinNumber')
+        self.work_sheet.write(0, 4, 'SoftBinNumber')
+        # self.work_sheet.write(0, 5, 'Period(ns)')
+        # self.work_sheet.write(0, 6, 'MCG CLK(ns)')
+
+        self.work_sheet.set_column(1, 1, 20)
+        self.work_sheet.set_column(2, 4, 15)
+
 
     def __test_table_process(self, flow_table_index, flow_table_info):
-        self.work_sheet.write(flow_table_index + 1, 0, label=flow_table_info['Opcode'])
-        self.work_sheet.write(flow_table_index + 1, 1, label=flow_table_info['Parameter'])
-        self.work_sheet.write(flow_table_index + 1, 2, label=flow_table_info['TestNumber'])
-        self.work_sheet.write(flow_table_index + 1, 3, label=flow_table_info['HardBin'])
-        self.work_sheet.write(flow_table_index + 1, 4, label=flow_table_info['SoftBin'])
+        self.work_sheet.write(flow_table_index + 1, 0, flow_table_info['Opcode'])
+        self.work_sheet.write(flow_table_index + 1, 1, flow_table_info['Parameter'])
+        self.work_sheet.write(flow_table_index + 1, 2, flow_table_info['TestNumber'])
+        self.work_sheet.write(flow_table_index + 1, 3, flow_table_info['HardBin'])
+        self.work_sheet.write(flow_table_index + 1, 4, flow_table_info['SoftBin'])
 
     def __spec_calculation(self, target, spec_dict, category_name, selector_name):
         target = target.replace('=', '')
@@ -226,10 +224,10 @@ class CheckInfo:
 
             # print pattern name & period
             pattern_index = 5 + dps_count
-            self.work_sheet.write(0, pattern_index, label='PatternName_0')
-            self.work_sheet.write(0, pattern_index + 1, label='Period_0')
-            self.work_sheet.write(0, pattern_index + 2, label='Clock_0')
-            self.work_sheet.col(pattern_index).width = 256 * 40
+            self.work_sheet.write(0, pattern_index, 'PatternName_0')
+            self.work_sheet.write(0, pattern_index + 1, 'Period_0')
+            self.work_sheet.write(0, pattern_index + 2, 'Clock_0')
+            self.work_sheet.set_column(pattern_index, pattern_index, 40)
             if ',' not in pattern_name:
                 # get period & clk
                 try:
@@ -238,9 +236,9 @@ class CheckInfo:
                     period_val, clk_val = "", ""
                     self.__put_data_log("Error: cannot read pattern file: " + pattern_name)
                     print("Error: cannot read pattern file: " + pattern_name)
-                self.work_sheet.write(flow_table_index + 1, pattern_index, label=pattern_name)
-                self.work_sheet.write(flow_table_index + 1, pattern_index + 1, label=period_val) #xxxx
-                self.work_sheet.write(flow_table_index + 1, pattern_index + 2, label=clk_val)
+                self.work_sheet.write(flow_table_index + 1, pattern_index, pattern_name)
+                self.work_sheet.write(flow_table_index + 1, pattern_index + 1, period_val) #xxxx
+                self.work_sheet.write(flow_table_index + 1, pattern_index + 2, clk_val)
             else:
                 pattern_list = pattern_name.split(",")
                 for pattern_index, pattern_name in enumerate(pattern_list):
@@ -254,20 +252,20 @@ class CheckInfo:
                         self.__put_data_log("Error: cannot read pattern file: " + pattern_name)
                         print("Error: cannot read pattern file: " + pattern_name)
                     self.work_sheet.write(0, pattern_index_new,
-                                          label='PatternName_' + str(pattern_index))
+                                          'PatternName_' + str(pattern_index))
                     self.work_sheet.write(flow_table_index + 1, pattern_index_new,
-                                          label=pattern_name)
-                    self.work_sheet.col(pattern_index_new).width = 256 * 40
+                                          pattern_name)
+                    self.work_sheet.set_column(pattern_index_new, pattern_index_new, 40)
 
                     self.work_sheet.write(0, pattern_index_new + 1,
-                                          label='Period_' + str(pattern_index))
+                                          'Period_' + str(pattern_index))
                     self.work_sheet.write(flow_table_index + 1, pattern_index_new + 1,
-                                          label=period_val) #xxxx
+                                          period_val) #xxxx
 
                     self.work_sheet.write(0, pattern_index_new + 2,
-                                          label='Clock_' + str(pattern_index))
+                                          'Clock_' + str(pattern_index))
                     self.work_sheet.write(flow_table_index + 1, pattern_index_new + 2,
-                                          label=clk_val)  # xxxx
+                                          clk_val)  # xxxx
         else:
             pass
 
@@ -286,9 +284,9 @@ class CheckInfo:
     #         mcg_clk_dic = self.clock_dic[timing_name][tset_name]
     #         try:
     #             period_value = self.__spec_calculation(timing_period, self.ac_spec_dict, category_name, selector_name)
-    #             self.work_sheet.write(flow_table_index + 1, 5, label=eval(format_str(period_value)))
+    #             self.work_sheet.write(flow_table_index + 1, 5, eval(format_str(period_value)))
     #         except Exception as e:
-    #             self.work_sheet.write(flow_table_index + 1, 5, label="Error: cannot parse AC variables: " + timing_period + "=" + period_value)
+    #             self.work_sheet.write(flow_table_index + 1, 5, "Error: cannot parse AC variables: " + timing_period + "=" + period_value)
     #             # self.__put_data_log("Error: cannot parse AC variables: " + timing_period)
     #             # print("Error: cannot parse AC variables: " + timing_period)
     #         if mcg_clk_dic.__len__() > 0:
@@ -296,7 +294,7 @@ class CheckInfo:
     #             for k,v in mcg_clk_dic.items():
     #                 mcg_clk_dic[k]=self.__spec_calculation(v, self.ac_spec_dict, category_name, selector_name)
     #                 tmpStr = tmpStr + k +":"+mcg_clk_dic[k]+";"
-    #             self.work_sheet.write(flow_table_index + 1, 6, label=tmpStr)
+    #             self.work_sheet.write(flow_table_index + 1, 6, tmpStr)
     #     else:
     #         pass
 
@@ -336,11 +334,11 @@ class CheckInfo:
                     power_pin_alias_dict[power_pin_name] = power_pin_name
 
             for pin_level_name, pin_level_info in pin_level_dict.items():
-                self.work_sheet.write(0, dps_index, label=power_pin_alias_dict[pin_level_name])
-                self.work_sheet.col(dps_index).width = 256 * 15
+                self.work_sheet.write(0, dps_index, power_pin_alias_dict[pin_level_name])
+                self.work_sheet.set_column(dps_index, dps_index, 15)
                 power_value = self.__spec_calculation(pin_level_info, self.dc_spec_dict, category_name, selector_name)
                 power_value = round(float(eval(format_str(power_value))), 5)
-                self.work_sheet.write(flow_table_index + 1, dps_index, label=str(power_value))
+                self.work_sheet.write(flow_table_index + 1, dps_index, str(power_value))
                 dps_index = dps_index + 1
         else:
             pass
