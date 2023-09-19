@@ -105,6 +105,8 @@ class CheckInfo:
             current_time = str(time.year) + str(time.month) + str(time.day) + "-" + str(time.hour) + str(time.minute) + str(time.second)
             output_name = 'CheckInfo_' + current_time + '.xlsx'
             work_book = xlsxwriter.Workbook(output_name)
+            self.format_red = work_book.add_format({'bg_color': '#FFC7CE'})
+            self.format_yellow = work_book.add_format({'bg_color': '#F7D674'})
             for flow_name in flow_table_set:
                 self.work_sheet = work_book.add_worksheet(flow_name)
                 flow_path = self.device_directory + '/' + flow_name + '.txt'
@@ -129,11 +131,11 @@ class CheckInfo:
         self.work_sheet.write(0, 2, 'TestNumber')
         self.work_sheet.write(0, 3, 'HardBinNumber')
         self.work_sheet.write(0, 4, 'SoftBinNumber')
-        # self.work_sheet.write(0, 5, 'Period(ns)')
+        self.work_sheet.write(0, 5, 'Result')
         # self.work_sheet.write(0, 6, 'MCG CLK(ns)')
 
         self.work_sheet.set_column(1, 1, 20)
-        self.work_sheet.set_column(2, 4, 15)
+        self.work_sheet.set_column(2, 5, 15)
 
 
     def __test_table_process(self, flow_table_index, flow_table_info):
@@ -142,6 +144,14 @@ class CheckInfo:
         self.work_sheet.write(flow_table_index + 1, 2, flow_table_info['TestNumber'])
         self.work_sheet.write(flow_table_index + 1, 3, flow_table_info['HardBin'])
         self.work_sheet.write(flow_table_index + 1, 4, flow_table_info['SoftBin'])
+        # self.work_sheet.write(flow_table_index + 1, 5, flow_table_info['Result'])
+
+        if flow_table_info['Opcode'] == "nop":
+            self.work_sheet.set_row(row=flow_table_index + 1, cell_format=self.format_red)
+        if flow_table_info['Result'] == "None" or flow_table_info['Result'] == "":
+            self.work_sheet.write(flow_table_index + 1, 5, flow_table_info['Result'], self.format_yellow)
+        else:
+            self.work_sheet.write(flow_table_index + 1, 5, flow_table_info['Result'])
 
     def __spec_calculation(self, target, spec_dict, category_name, selector_name):
         target = target.replace('=', '')
@@ -211,63 +221,67 @@ class CheckInfo:
 
     def __pattern_period_clk_process(self, dps_count, flow_table_index, flow_table_info, flow_table_directory):
         test_suite_name = flow_table_info['Parameter']
-        pattern_name = self.test_instance_dict[test_suite_name]['Pattern']
-        timing_name = self.test_instance_dict[test_suite_name]['TimeSet']
-        category_name = self.test_instance_dict[test_suite_name]['AC Category']
-        selector_name = self.test_instance_dict[test_suite_name]['AC Selector']
-        if pattern_name != '' and timing_name != '':
-            # get timing & tset info
-            pt = ParseTIM()
-            pt.read_timing(os.path.join(flow_table_directory, timing_name.split(',')[0] + '.txt'), self.platform)
-            self.tsb_dict[timing_name] = pt.get_timing_info()
-            self.clock_dic[timing_name] = pt.get_clk_info()
+        if test_suite_name in self.test_instance_dict.keys():
+            pattern_name = self.test_instance_dict[test_suite_name]['Pattern']
+            timing_name = self.test_instance_dict[test_suite_name]['TimeSet']
+            category_name = self.test_instance_dict[test_suite_name]['AC Category']
+            selector_name = self.test_instance_dict[test_suite_name]['AC Selector']
+            if pattern_name != '' and timing_name != '':
+                # get timing & tset info
+                pt = ParseTIM()
+                pt.read_timing(os.path.join(flow_table_directory, timing_name.split(',')[0] + '.txt'), self.platform)
+                self.tsb_dict[timing_name] = pt.get_timing_info()
+                self.clock_dic[timing_name] = pt.get_clk_info()
 
-            # print pattern name & period
-            pattern_index = 5 + dps_count
-            self.work_sheet.write(0, pattern_index, 'PatternName_0')
-            self.work_sheet.write(0, pattern_index + 1, 'Period_0')
-            self.work_sheet.write(0, pattern_index + 2, 'Clock_0')
-            self.work_sheet.set_column(pattern_index, pattern_index, 40)
-            if ',' not in pattern_name:
-                # get period & clk
-                try:
-                    period_val, clk_val = self.__extract_per_clk(pattern_name, timing_name, category_name, selector_name)
-                except Exception as e:
-                    period_val, clk_val = "", ""
-                    self.__put_data_log("Error: cannot read pattern file: " + pattern_name)
-                    print("Error: cannot read pattern file: " + pattern_name)
-                self.work_sheet.write(flow_table_index + 1, pattern_index, pattern_name)
-                self.work_sheet.write(flow_table_index + 1, pattern_index + 1, period_val) #xxxx
-                self.work_sheet.write(flow_table_index + 1, pattern_index + 2, clk_val)
-            else:
-                pattern_list = pattern_name.split(",")
-                for pattern_index, pattern_name in enumerate(pattern_list):
-                    pattern_index_new = 5 + dps_count + 3 * pattern_index
+                # print pattern name & period
+                pattern_index = 6 + dps_count
+                self.work_sheet.write(0, pattern_index, 'PatternName_0')
+                self.work_sheet.write(0, pattern_index + 1, 'Period_0')
+                self.work_sheet.write(0, pattern_index + 2, 'Clock_0')
+                self.work_sheet.set_column(pattern_index, pattern_index, 40)
+                if ',' not in pattern_name:
                     # get period & clk
                     try:
-                        period_val, clk_val = self.__extract_per_clk(pattern_name, timing_name, category_name,
-                                                                     selector_name)
+                        period_val, clk_val = self.__extract_per_clk(pattern_name, timing_name, category_name, selector_name)
                     except Exception as e:
                         period_val, clk_val = "", ""
                         self.__put_data_log("Error: cannot read pattern file: " + pattern_name)
                         print("Error: cannot read pattern file: " + pattern_name)
-                    self.work_sheet.write(0, pattern_index_new,
-                                          'PatternName_' + str(pattern_index))
-                    self.work_sheet.write(flow_table_index + 1, pattern_index_new,
-                                          pattern_name)
-                    self.work_sheet.set_column(pattern_index_new, pattern_index_new, 40)
+                    self.work_sheet.write(flow_table_index + 1, pattern_index, pattern_name)
+                    self.work_sheet.write(flow_table_index + 1, pattern_index + 1, period_val) #xxxx
+                    self.work_sheet.write(flow_table_index + 1, pattern_index + 2, clk_val)
+                else:
+                    pattern_list = pattern_name.split(",")
+                    for pattern_index, pattern_name in enumerate(pattern_list):
+                        pattern_index_new = 5 + dps_count + 3 * pattern_index
+                        # get period & clk
+                        try:
+                            period_val, clk_val = self.__extract_per_clk(pattern_name, timing_name, category_name,
+                                                                         selector_name)
+                        except Exception as e:
+                            period_val, clk_val = "", ""
+                            self.__put_data_log("Error: cannot read pattern file: " + pattern_name)
+                            print("Error: cannot read pattern file: " + pattern_name)
+                        self.work_sheet.write(0, pattern_index_new,
+                                              'PatternName_' + str(pattern_index))
+                        self.work_sheet.write(flow_table_index + 1, pattern_index_new,
+                                              pattern_name)
+                        self.work_sheet.set_column(pattern_index_new, pattern_index_new, 40)
 
-                    self.work_sheet.write(0, pattern_index_new + 1,
-                                          'Period_' + str(pattern_index))
-                    self.work_sheet.write(flow_table_index + 1, pattern_index_new + 1,
-                                          period_val) #xxxx
+                        self.work_sheet.write(0, pattern_index_new + 1,
+                                              'Period_' + str(pattern_index))
+                        self.work_sheet.write(flow_table_index + 1, pattern_index_new + 1,
+                                              period_val) #xxxx
 
-                    self.work_sheet.write(0, pattern_index_new + 2,
-                                          'Clock_' + str(pattern_index))
-                    self.work_sheet.write(flow_table_index + 1, pattern_index_new + 2,
-                                          clk_val)  # xxxx
+                        self.work_sheet.write(0, pattern_index_new + 2,
+                                              'Clock_' + str(pattern_index))
+                        self.work_sheet.write(flow_table_index + 1, pattern_index_new + 2,
+                                              clk_val)  # xxxx
+            else:
+                pass
         else:
-            pass
+            self.__put_data_log("Info: cannot found " + test_suite_name + " in Test Instance, please check.")
+            print("Info: cannot found " + test_suite_name + " in Test Instance, please check.")
 
     # def __period_process(self, flow_table_directory, flow_table_index, flow_table_info):
     #     test_suite_name = flow_table_info['Parameter']
@@ -299,49 +313,53 @@ class CheckInfo:
     #         pass
 
     def __power_process_and_get_count(self, flow_table_directory, flow_table_info, flow_table_index):
-        dps_index = 5#6
+        dps_index = 6
         dps_count = 0
         test_suite_name = flow_table_info['Parameter']
-        if self.test_instance_dict[test_suite_name]['DC Category'] != '':
-            level_sheet_name = self.test_instance_dict[test_suite_name]['PinLevel']
-            category_name = self.test_instance_dict[test_suite_name]['DC Category']
-            selector_name = self.test_instance_dict[test_suite_name]['DC Selector']
-            ppl = ParsePinLevel()
-            ppl.read_pin_level(os.path.join(flow_table_directory, level_sheet_name + '.txt'))
-            pin_level_origin_dict = ppl.get_pin_level_info()
-            dps_count = len(pin_level_origin_dict)
-            pin_level_dict = collections.OrderedDict()
-            power_pin_alias_dict = collections.OrderedDict()
-            if self.power_order_path != '':
-                read_book = xlrd.open_workbook(self.power_order_path)
-                read_sheet = read_book.sheet_by_index(0)
-                rows = read_sheet.nrows
-                for row in range(rows):
-                    try:
-                        power_pin_name = read_sheet.cell(row + 1, 0).value
-                        alias = read_sheet.cell(row + 1, 1).value
-                        power_pin_alias_dict[power_pin_name] = alias if alias != '' else power_pin_name
-                    except IndexError:
-                        break
-                    if power_pin_name in pin_level_origin_dict.keys():
-                        pin_level_dict[power_pin_name] = pin_level_origin_dict[power_pin_name]
-                    else:
-                        self.__put_data_log('Cannot find power pin name in pin level file!')
-                        self.__put_data_log('Power pin name is: ' + power_pin_name)
-            else:
-                pin_level_dict = pin_level_origin_dict
-                for power_pin_name in pin_level_origin_dict.keys():
-                    power_pin_alias_dict[power_pin_name] = power_pin_name
+        if test_suite_name in self.test_instance_dict.keys():
+            if self.test_instance_dict[test_suite_name]['DC Category'] != '':
+                level_sheet_name = self.test_instance_dict[test_suite_name]['PinLevel']
+                category_name = self.test_instance_dict[test_suite_name]['DC Category']
+                selector_name = self.test_instance_dict[test_suite_name]['DC Selector']
+                ppl = ParsePinLevel()
+                ppl.read_pin_level(os.path.join(flow_table_directory, level_sheet_name + '.txt'))
+                pin_level_origin_dict = ppl.get_pin_level_info()
+                dps_count = len(pin_level_origin_dict)
+                pin_level_dict = collections.OrderedDict()
+                power_pin_alias_dict = collections.OrderedDict()
+                if self.power_order_path != '':
+                    read_book = xlrd.open_workbook(self.power_order_path)
+                    read_sheet = read_book.sheet_by_index(0)
+                    rows = read_sheet.nrows
+                    for row in range(rows):
+                        try:
+                            power_pin_name = read_sheet.cell(row + 1, 0).value
+                            alias = read_sheet.cell(row + 1, 1).value
+                            power_pin_alias_dict[power_pin_name] = alias if alias != '' else power_pin_name
+                        except IndexError:
+                            break
+                        if power_pin_name in pin_level_origin_dict.keys():
+                            pin_level_dict[power_pin_name] = pin_level_origin_dict[power_pin_name]
+                        else:
+                            self.__put_data_log('Cannot find power pin name in pin level file!')
+                            self.__put_data_log('Power pin name is: ' + power_pin_name)
+                else:
+                    pin_level_dict = pin_level_origin_dict
+                    for power_pin_name in pin_level_origin_dict.keys():
+                        power_pin_alias_dict[power_pin_name] = power_pin_name
 
-            for pin_level_name, pin_level_info in pin_level_dict.items():
-                self.work_sheet.write(0, dps_index, power_pin_alias_dict[pin_level_name])
-                self.work_sheet.set_column(dps_index, dps_index, 15)
-                power_value = self.__spec_calculation(pin_level_info, self.dc_spec_dict, category_name, selector_name)
-                power_value = round(float(eval(format_str(power_value))), 5)
-                self.work_sheet.write(flow_table_index + 1, dps_index, str(power_value))
-                dps_index = dps_index + 1
+                for pin_level_name, pin_level_info in pin_level_dict.items():
+                    self.work_sheet.write(0, dps_index, power_pin_alias_dict[pin_level_name])
+                    self.work_sheet.set_column(dps_index, dps_index, 15)
+                    power_value = self.__spec_calculation(pin_level_info, self.dc_spec_dict, category_name, selector_name)
+                    power_value = round(float(eval(format_str(power_value))), 5)
+                    self.work_sheet.write(flow_table_index + 1, dps_index, str(power_value))
+                    dps_index = dps_index + 1
+            else:
+                pass
         else:
-            pass
+            self.__put_data_log("Info: cannot found " + test_suite_name + " in Test Instance, please check.")
+            print("Info: cannot found " + test_suite_name + " in Test Instance, please check.")
 
         return dps_count
 
@@ -468,8 +486,8 @@ class CheckInfo:
             # Without Pandas, first write instance name/power, then write pat to align column
             for flow_table_index, flow_table_info in enumerate(flow_table_info_list):
                 try:
-                    if flow_table_info["Parameter"] == "DNA_READ_PCM_TEST":
-                        print("OK")
+                    # if flow_table_info["Parameter"] == "DNA_READ_PCM_TEST":
+                    #     print("OK")
                     self.__pattern_period_clk_process(self.MAX_DSP_CNT, flow_table_index, flow_table_info, flow_table_directory)
                 except Exception as e:
                     self.__put_data_log("Error fonud in pattern/timing process:")

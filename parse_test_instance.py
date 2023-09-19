@@ -41,11 +41,15 @@ class ParseTestInstance:
                             break
                         else:
                             pattern_info = ''
+                            hit_cnt = 0
                             for i in range(14, 20):
                                 if line_list[i].upper() in pattern_set_dict.keys():
                                     # pattern_info = line_list[i]
-                                    pattern_info = ','.join(pattern_set_dict[line_list[i].upper()])
-                                    break
+                                    if hit_cnt == 0:
+                                        pattern_info = ','.join(pattern_set_dict[line_list[i].upper()])
+                                    else:
+                                        pattern_info += ','.join(pattern_set_dict[line_list[i].upper()])
+                                    hit_cnt += 1
                             if pattern_info != "":
                                 self.__test_instance_dict[line_list[1].upper()] = self.__get_instance_content(line_list,
                                                                                                               pattern_info)
