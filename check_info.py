@@ -42,6 +42,7 @@ class CheckInfo:
         self.platform = 'UltraFLEX'
         self.tsb_dict = {}
         self.clock_dic = {}
+        self.print_inst_info_col_cnt = 6
 
     def reset(self):
         self.power_order_path = ''
@@ -59,6 +60,7 @@ class CheckInfo:
         self.platform = 'UltraFLEX'
         self.tsb_dict = {}
         self.clock_dic = {}
+        self.print_inst_info_col_cnt = 6
 
     def read_device(self, device_path, power_order_path, pattern_path, platform, text):
         self.reset()
@@ -234,7 +236,7 @@ class CheckInfo:
                 self.clock_dic[timing_name] = pt.get_clk_info()
 
                 # print pattern name & period
-                pattern_index = 6 + dps_count
+                pattern_index = self.print_inst_info_col_cnt + dps_count
                 self.work_sheet.write(0, pattern_index, 'PatternName_0')
                 self.work_sheet.write(0, pattern_index + 1, 'Period_0')
                 self.work_sheet.write(0, pattern_index + 2, 'Clock_0')
@@ -245,15 +247,15 @@ class CheckInfo:
                         period_val, clk_val = self.__extract_per_clk(pattern_name, timing_name, category_name, selector_name)
                     except Exception as e:
                         period_val, clk_val = "", ""
-                        self.__put_data_log("Error: cannot read pattern file: " + pattern_name)
-                        print("Error: cannot read pattern file: " + pattern_name)
+                        self.__put_data_log("Warning: cannot read pattern file: " + pattern_name)
+                        print("Warning: cannot read pattern file: " + pattern_name)
                     self.work_sheet.write(flow_table_index + 1, pattern_index, pattern_name)
                     self.work_sheet.write(flow_table_index + 1, pattern_index + 1, period_val) #xxxx
                     self.work_sheet.write(flow_table_index + 1, pattern_index + 2, clk_val)
                 else:
                     pattern_list = pattern_name.split(",")
                     for pattern_index, pattern_name in enumerate(pattern_list):
-                        pattern_index_new = 5 + dps_count + 3 * pattern_index
+                        pattern_index_new = self.print_inst_info_col_cnt + dps_count + 3 * pattern_index
                         # get period & clk
                         try:
                             period_val, clk_val = self.__extract_per_clk(pattern_name, timing_name, category_name,
@@ -313,7 +315,7 @@ class CheckInfo:
     #         pass
 
     def __power_process_and_get_count(self, flow_table_directory, flow_table_info, flow_table_index):
-        dps_index = 6
+        dps_index = self.print_inst_info_col_cnt
         dps_count = 0
         test_suite_name = flow_table_info['Parameter']
         if test_suite_name in self.test_instance_dict.keys():
