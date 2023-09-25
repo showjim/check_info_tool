@@ -8,7 +8,7 @@ class ParseTestInstance:
         pattern_info = ''
         if pattern_info_list:
             pattern_info = ','.join(pattern_info_list)
-        self.__test_instance_dict[line_list[1].upper()] = self.__get_instance_content(line_list, pattern_info)
+        self.__test_instance_dict[line_list[1].upper()].append(self.__get_instance_content(line_list, pattern_info))
 
 
     def read_test_instance(self, test_instance_path:str, pattern_set_dict, platform:str='UltraFLEX Plus'):
@@ -42,6 +42,10 @@ class ParseTestInstance:
                         else:
                             pattern_info = ''
                             hit_cnt = 0
+                            inst_name = line_list[1].upper()
+                            # Incase one instance wih multiple test conditions/parameters
+                            if inst_name not in self.__test_instance_dict.keys():
+                                self.__test_instance_dict[inst_name] = []
                             for i in range(14, 20):
                                 if line_list[i].upper() in pattern_set_dict.keys():
                                     # pattern_info = line_list[i]
@@ -51,8 +55,7 @@ class ParseTestInstance:
                                         pattern_info = pattern_info + ',' + ','.join(pattern_set_dict[line_list[i].upper()])
                                     hit_cnt += 1
                             if pattern_info != "":
-                                self.__test_instance_dict[line_list[1].upper()] = self.__get_instance_content(line_list,
-                                                                                                              pattern_info)
+                                self.__test_instance_dict[inst_name].append(self.__get_instance_content(line_list, pattern_info))
                             else:
                                 self.find_pat_path(pat_pattern, test_instance_line, line_list)
                     else:
