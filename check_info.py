@@ -490,7 +490,9 @@ class CheckInfo:
             for flow_table_index, flow_table_info in enumerate(flow_table_info_list):
                 test_suite_name = flow_table_info['Parameter']
                 flow_table_info_list[flow_table_index]["write_row_start"] = self.write_row_index
-                self.write_row_index += len(self.test_instance_dict[test_suite_name])
+                if test_suite_name in self.test_instance_dict.keys():
+                    self.write_row_index += len(self.test_instance_dict[test_suite_name])
+
             for flow_table_index, flow_table_info in enumerate(flow_table_info_list):
                 write_row = flow_table_info_list[flow_table_index]["write_row_start"]
                 try:
