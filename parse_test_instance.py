@@ -26,6 +26,10 @@ class ParseTestInstance:
                         if line_list[1] == '':
                             break
                         else:
+                            inst_name = line_list[1].upper()
+                            # Incase one instance wih multiple test conditions/parameters
+                            if inst_name not in self.__test_instance_dict.keys():
+                                self.__test_instance_dict[inst_name] = []
                             if "UltraFLEX" in platform:
                                 test_instance_line = "\t".join(line_list[:144])
                             else:

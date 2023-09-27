@@ -446,6 +446,7 @@ class CheckInfo:
                     try:
                         pti.read_test_instance(test_instance_name, self.pattern_set_dict, self.platform)
                     except Exception as e:
+                        self.__put_data_log("Error: cannot read " + test_instance_name + ", please check it!")
                         print(str(e))
             else:
                 pass

@@ -15,7 +15,8 @@ def get_flow_content(line_list, platform):
 class ParseFlowTable:
 
     def read_flow_table(self, flow_path: str, platform: str):
-
+        if os.path.isfile(flow_path) == False:
+            flow_path = flow_path.replace('%20',' ')
         with open(flow_path, 'r') as flow_file:
             lines = flow_file.readlines()
             for line_index in range(len(lines)):
