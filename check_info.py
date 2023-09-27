@@ -200,29 +200,40 @@ class CheckInfo:
 
     def __extract_per_clk(self, pattern_name: str, timing_name: str, category_name: str, selector_name: str):
         # get tset from pattern
-        ppat = ParsePatternSet()
-        ppat.read_tset_from_pattern(self.pattern_path, pattern_name)
-        tset_name = ppat.get_pattern_tset()
+        period_val, clk_val = "", ""
+        if self.pattern_path != "":
+            ppat = ParsePatternSet()
+            ppat.read_tset_from_pattern(self.pattern_path, pattern_name)
+            tset_name_list = ppat.get_pattern_tset()
 
-        timing_period = self.tsb_dict[timing_name][tset_name.upper()]
-        mcg_clk_dic = self.clock_dic[timing_name][tset_name.upper()]
+            for tset_name in tset_name_list:
+                if tset_name.upper() in self.tsb_dict[timing_name].keys():
+                    timing_period = self.tsb_dict[timing_name][tset_name.upper()]
+                    mcg_clk_dic = self.clock_dic[timing_name][tset_name.upper()]
 
-        period_value = ""
-        try:
-            period_value = self.__spec_calculation(timing_period, self.ac_spec_dict, category_name, selector_name)
-            period_val = str(eval(format_str(period_value)))
-        except Exception as e:
-            period_val = "Error: cannot parse AC variables: " + timing_period + "=" + period_value
-            # self.__put_data_log("Error: cannot parse AC variables: " + timing_period)
-            # print("Error: cannot parse AC variables: " + timing_period)
+                    period_value = ""
+                    try:
+                        period_value = self.__spec_calculation(timing_period, self.ac_spec_dict, category_name, selector_name)
+                        period_val = str(eval(format_str(period_value)))
+                    except Exception as e:
+                        period_val = "Error: cannot parse AC variables: " + timing_period + "=" + period_value
+                        # self.__put_data_log("Error: cannot parse AC variables: " + timing_period)
+                        # print("Error: cannot parse AC variables: " + timing_period)
 
-        clk_val = ""
-        if mcg_clk_dic.__len__() > 0:
-            tmpStr = ''
-            for k, v in mcg_clk_dic.items():
-                mcg_clk_dic[k] = self.__spec_calculation(v, self.ac_spec_dict, category_name, selector_name)
-                tmpStr = tmpStr + k + ":" + mcg_clk_dic[k] + ";"
-            clk_val = tmpStr
+                    clk_val = ""
+                    if mcg_clk_dic.__len__() > 0:
+                        tmpStr = ''
+                        for k, v in mcg_clk_dic.items():
+                            mcg_clk_dic[k] = self.__spec_calculation(v, self.ac_spec_dict, category_name, selector_name)
+                            tmpStr = tmpStr + k + ":" + mcg_clk_dic[k] + ";"
+                        clk_val = tmpStr
+                    break
+                else:
+                    period_val, clk_val = "", ""
+                    self.__put_data_log("Warning: Tset(" + tset_name + ") in pattern(" + pattern_name + ") is not list in TSB: " + timing_name)
+                    print("Warning: Tset(" + tset_name + ") in pattern(" + pattern_name + ") is not list in TSB: " + timing_name)
+        else:
+            period_val, clk_val = "", ""
         return period_val, clk_val
 
     def __pattern_period_clk_process(self, dps_count, write_row_start, flow_table_info, flow_table_directory):

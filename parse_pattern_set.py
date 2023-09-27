@@ -4,7 +4,7 @@ from subprocess import run
 
 class ParsePatternSet:
     def __init__(self):
-        self.__tset_name = ""
+        self.__tset_name = [] # ""
         self.__pattern_set_dict = {}
         self.__cycle_dict = {}
         self.__pattern_set_version = None
@@ -97,18 +97,18 @@ class ParsePatternSet:
                 run('patinfo ' + '"' + pattern_path + '"' + ' -tset > pattern_tset.txt', shell=True)
                 # parse pattern_tset.txt
                 exract_file_path = "pattern_tset.txt"
-                tset_pattern = re.compile("Tset Name Table:\s+----------------\s+(\S+)")
+                tset_pattern = re.compile("\t(\S+)  \d\n") #("Tset Name Table:\s+----------------(\s+(\S+))+")
                 # Using readlines()
                 buffer = open(exract_file_path, 'r')
                 Lines = buffer.readlines()
-                line = "\n".join(Lines)
-                tset_search = re.search(tset_pattern, line)
+                line = "".join(Lines)
+                tset_search = re.findall(tset_pattern, line)
                 if tset_search is not None:
-                    tset_name = tset_search.group(1)
-                    self.__tset_name =tset_name
-                    print(tset_name)
+                    tset_name = tset_search
+                    self.__tset_name = tset_name
+                    #print(tset_name)
             else:
-                self.__tset_name = "Error: pattern file does not e"
+                self.__tset_name = ["Error: pattern file does not exist"]
 
     def get_pattern_cycle_info(self):
         return self.__cycle_dict
