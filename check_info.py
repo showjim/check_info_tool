@@ -338,7 +338,7 @@ class CheckInfo:
     #         pass
 
     def __power_process_and_get_count(self, flow_table_directory, flow_table_info, flow_table_index):
-
+        dps_count = 0
         test_suite_name = flow_table_info['Parameter']
         if test_suite_name in self.test_instance_dict.keys():
             for single_inst in self.test_instance_dict[test_suite_name]:
