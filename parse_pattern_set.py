@@ -97,7 +97,7 @@ class ParsePatternSet:
                 run('patinfo ' + '"' + pattern_path + '"' + ' -tset > pattern_tset.txt', shell=True)
                 # parse pattern_tset.txt
                 exract_file_path = "pattern_tset.txt"
-                tset_pattern = re.compile("\t(\S+)  \d\n") #("Tset Name Table:\s+----------------(\s+(\S+))+")
+                tset_pattern = re.compile("\t(\S+) {1,2}\d\n") #("Tset Name Table:\s+----------------(\s+(\S+))+")
                 # Using readlines()
                 buffer = open(exract_file_path, 'r')
                 Lines = buffer.readlines()
