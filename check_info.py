@@ -111,6 +111,7 @@ class CheckInfo:
             work_book = xlsxwriter.Workbook(output_name)
             self.format_red = work_book.add_format({'bg_color': '#FFC7CE'})
             self.format_yellow = work_book.add_format({'bg_color': '#F7D674'})
+            self.format_orange = work_book.add_format({'bg_color': '#FFAA33'})
             for flow_name in flow_table_set:
                 self.work_sheet = work_book.add_worksheet(flow_name)
                 self.work_sheet.outline_settings(True, False, True, False)
@@ -381,7 +382,7 @@ class CheckInfo:
                         power_value = self.__spec_calculation(pin_level_info, self.dc_spec_dict, category_name, selector_name)
                         power_value = round(float(eval(format_str(power_value))), 5)
                         if power_value == 0:
-                            self.work_sheet.write(flow_table_index + 1, dps_index, str(power_value), self.format_red)
+                            self.work_sheet.write(flow_table_index + 1, dps_index, str(power_value), self.format_orange)
                         else:
                             self.work_sheet.write(flow_table_index + 1, dps_index, str(power_value))
                         dps_index = dps_index + 1
