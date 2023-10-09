@@ -380,7 +380,10 @@ class CheckInfo:
                         self.work_sheet.set_column(dps_index, dps_index, 15)
                         power_value = self.__spec_calculation(pin_level_info, self.dc_spec_dict, category_name, selector_name)
                         power_value = round(float(eval(format_str(power_value))), 5)
-                        self.work_sheet.write(flow_table_index + 1, dps_index, str(power_value))
+                        if power_value == 0:
+                            self.work_sheet.write(flow_table_index + 1, dps_index, str(power_value), self.format_red)
+                        else:
+                            self.work_sheet.write(flow_table_index + 1, dps_index, str(power_value))
                         dps_index = dps_index + 1
                 else:
                     pass
