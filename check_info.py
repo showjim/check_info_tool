@@ -146,19 +146,23 @@ class CheckInfo:
 
 
     def __test_table_process(self, flow_table_index, flow_table_info):
-        self.work_sheet.write(flow_table_index + 1, 0, flow_table_info['Opcode'])
-        self.work_sheet.write(flow_table_index + 1, 1, flow_table_info['Parameter'])
-        self.work_sheet.write(flow_table_index + 1, 2, flow_table_info['TestNumber'])
-        self.work_sheet.write(flow_table_index + 1, 3, flow_table_info['HardBin'])
-        self.work_sheet.write(flow_table_index + 1, 4, flow_table_info['SoftBin'])
-        # self.work_sheet.write(flow_table_index + 1, 5, flow_table_info['Result'])
+        test_suite_name = flow_table_info['Parameter']
+        if test_suite_name in self.test_instance_dict.keys():
+            for single_inst in self.test_instance_dict[test_suite_name]:
+                self.work_sheet.write(flow_table_index + 1, 0, flow_table_info['Opcode'])
+                self.work_sheet.write(flow_table_index + 1, 1, flow_table_info['Parameter'])
+                self.work_sheet.write(flow_table_index + 1, 2, flow_table_info['TestNumber'])
+                self.work_sheet.write(flow_table_index + 1, 3, flow_table_info['HardBin'])
+                self.work_sheet.write(flow_table_index + 1, 4, flow_table_info['SoftBin'])
+                # self.work_sheet.write(flow_table_index + 1, 5, flow_table_info['Result'])
 
-        if flow_table_info['Opcode'] == "nop":
-            self.work_sheet.set_row(row=flow_table_index + 1, cell_format=self.format_red)
-        if flow_table_info['Result'] == "None" or flow_table_info['Result'] == "":
-            self.work_sheet.write(flow_table_index + 1, 5, flow_table_info['Result'], self.format_yellow)
-        else:
-            self.work_sheet.write(flow_table_index + 1, 5, flow_table_info['Result'])
+                if flow_table_info['Opcode'] == "nop":
+                    self.work_sheet.set_row(row=flow_table_index + 1, cell_format=self.format_red)
+                if flow_table_info['Result'] == "None" or flow_table_info['Result'] == "":
+                    self.work_sheet.write(flow_table_index + 1, 5, flow_table_info['Result'], self.format_yellow)
+                else:
+                    self.work_sheet.write(flow_table_index + 1, 5, flow_table_info['Result'])
+                flow_table_index += 1
 
     def __spec_calculation(self, target, spec_dict, category_name, selector_name):
         target = target.replace('=', '')

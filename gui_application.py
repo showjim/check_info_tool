@@ -4,7 +4,7 @@ from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
 
-_VERSION = "Beta 1.3.3"
+_VERSION = "Beta 1.3.4"
 
 class Application(tk.Tk):
 
