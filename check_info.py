@@ -266,8 +266,14 @@ class CheckInfo:
                     if mcg_clk_dic.__len__() > 0:
                         tmpStr = ''
                         for k, v in mcg_clk_dic.items():
-                            mcg_clk_dic[k] = self.__spec_calculation(v, self.ac_spec_dict, category_name, selector_name)
-                            tmpStr = tmpStr + k + ":" + mcg_clk_dic[k] + ";"
+                            try:
+                                mcg_clk_dic[k] = self.__spec_calculation(v, self.ac_spec_dict, category_name, selector_name)
+                                if self.cycle_mode == "Frequency":
+                                    mcg_clk_dic[k] = "1/(" + mcg_clk_dic[k] + ")"
+                                tmp_clk = self.add_unit(eval(format_str(mcg_clk_dic[k])))
+                            except Exception as e:
+                                tmp_clk = "Error: cannot parse AC variables: " + k + "=" + mcg_clk_dic[k]
+                            tmpStr = tmpStr + k + ":" + tmp_clk + ";"
                         clk_val = tmpStr
                     # break
                 else:
