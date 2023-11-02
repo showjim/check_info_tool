@@ -4,7 +4,7 @@ from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
 
-_VERSION = "Beta 1.3.4"
+_VERSION = "Beta 1.4.0"
 
 class Application(tk.Tk):
 
@@ -27,6 +27,7 @@ class Application(tk.Tk):
         self.key_var = tk.StringVar()
         self.key_var.set('UltraFLEX Plus')
         items = ['UltraFLEX Plus', 'UltraFLEX', 'J750']
+        self.cycle_format_var = tk.StringVar()
 
         top_frame = tk.Frame(self, borderwidth=1)#, height=80)
         content_frame = tk.Frame(self, borderwidth=1)
@@ -46,11 +47,23 @@ class Application(tk.Tk):
         load_button = tk.Button(top_frame, command=self.import_flow, text='Load', width=8)
         run_button = tk.Button(top_frame, command=self.run, text='Run') #, width=8
         combobox = ttk.Combobox(top_frame, values=items, textvariable=self.key_var, width=12)
+        sep_label = tk.Label(top_frame, text='Report Config:')
+        sep = ttk.Separator(top_frame, orient="horizontal")
+        check_box_Label = ttk.Label(top_frame, text='Cycle Mode:')
+        check_box1 = ttk.Radiobutton(top_frame, text=u'Period', variable=self.cycle_format_var, value='Period')
+        check_box2 = ttk.Radiobutton(top_frame, text=u'Frequency', variable=self.cycle_format_var, value='Frequency')
+        self.cycle_format_var.set('Period')
+
         label.grid(row=0, column=0, padx=5, pady=5)
         entry.grid(row=0, column=1, padx=5, pady=5)
         combobox.grid(row=0, column=2, padx=5, pady=5)
         load_button.grid(row=0, column=3, padx=5, pady=5)
         run_button.grid(row=0, column=4, padx=5, pady=5)
+        sep.grid(row=1, column=0, rowspan=1, columnspan=5, sticky='EW', padx=5, pady=5)
+        sep_label.grid(row=2, column=0, sticky='E', padx=5, pady=5)
+        check_box_Label.grid(row=2, column=1, sticky='E')
+        check_box1.grid(row=2, column=2)#, sticky='W')
+        check_box2.grid(row=2, column=3)#, sticky='E')
 
         right_bar = tk.Scrollbar(content_frame, orient=tk.VERTICAL)
         bottom_bar = tk.Scrollbar(content_frame, orient=tk.HORIZONTAL)
@@ -105,7 +118,7 @@ class Application(tk.Tk):
         if not self.sub_root_flag:
             self.sub_root_flag = True
             self.put_data_log('===============================START===============================')
-            self.check_info.read_device(self.entry_var.get(), self.power_var.get(), self.pattern_var.get(), self.key_var.get(), self.textbox)
+            self.check_info.read_device(self.entry_var.get(), self.power_var.get(), self.pattern_var.get(), self.key_var.get(), self.textbox, self.cycle_format_var.get())
             job_list_dict = self.check_info.get_job_list()
             sub_root = tk.Tk()
             sub_root.title('Select Flow Table')

@@ -44,6 +44,8 @@ class CheckInfo:
         self.clock_dic = {}
         self.print_inst_info_col_cnt = 6
         self.write_row_index = 0
+        self.cycle_mode = ""
+        self.tset_dict = {}
 
     def reset(self):
         self.power_order_path = ''
@@ -63,11 +65,14 @@ class CheckInfo:
         self.clock_dic = {}
         self.print_inst_info_col_cnt = 6
         self.write_row_index = 0
+        self.cycle_mode = ""
+        self.tset_dict = {}
 
-    def read_device(self, device_path, power_order_path, pattern_path, platform, text):
+    def read_device(self, device_path, power_order_path, pattern_path, platform, text, cycle_mode):
         self.reset()
         self.text = text
         self.platform = platform
+        self.cycle_mode = cycle_mode
         if power_order_path != '':
             self.__put_data_log("Import Power Order File: " + power_order_path)
         self.power_order_path = power_order_path
@@ -117,6 +122,8 @@ class CheckInfo:
                 self.work_sheet.outline_settings(True, False, True, False)
                 flow_path = self.device_directory + '/' + flow_name + '.txt'
                 self.__run_each_flow(flow_path)
+            tset_work_sheet = work_book.add_worksheet("Pattern_Tset_List")
+            self.write_dict_to_excel(self.tset_dict, tset_work_sheet)
             work_book.close()
             self.__put_data_log('Output file path is: ' + output_name)
             self.__put_data_log('Execution successful!!!')
@@ -125,6 +132,12 @@ class CheckInfo:
             self.__put_data_log('An exception occurred!Please check!!!')
             self.__put_data_log(str(e))
             traceback.print_exc()
+    def write_dict_to_excel(self, my_dict, worksheet):
+        row_num = 0
+        for key, value in my_dict.items():
+            worksheet.write(row_num, 0, key)
+            worksheet.write_row(row_num, 1, value)
+            row_num += 1
 
     def __put_data_log(self, data_log):
         self.text.insert(tk.END, data_log + '\n')
@@ -203,6 +216,23 @@ class CheckInfo:
                 pass
         return target
 
+    def add_unit(self, val):
+        unit_dict = {
+            '1000000000': 'G',
+            '1000000': 'M',
+            '1000': 'K',
+            '0.001': 'm',
+            '0.000001': 'u',
+            '0.000000001': 'n',
+            '0.000000000001': 'p'
+        }
+
+        for k,v in unit_dict.items():
+            if val >= eval(k):
+                value = float(val) / eval(k)
+                return '%.3f%s' % (value, v)
+        return
+
     def __extract_per_clk(self, pattern_name: str, timing_name: str, category_name: str, selector_name: str):
         # get tset from pattern
         period_val, clk_val = "", ""
@@ -210,6 +240,7 @@ class CheckInfo:
             ppat = ParsePatternSet()
             ppat.read_tset_from_pattern(self.pattern_path, pattern_name)
             tset_name_list = ppat.get_pattern_tset()
+            self.tset_dict[pattern_name] = tset_name_list
 
             for tset_name in tset_name_list:
                 if tset_name.upper() in self.tsb_dict[timing_name].keys():
@@ -219,7 +250,9 @@ class CheckInfo:
                     period_value = ""
                     try:
                         period_value = self.__spec_calculation(timing_period, self.ac_spec_dict, category_name, selector_name)
-                        period_val = str(eval(format_str(period_value)))
+                        if self.cycle_mode == "Frequency":
+                            period_value = "1/(" + period_value + ")"
+                        period_val = self.add_unit(eval(format_str(period_value)))
                     except Exception as e:
                         period_val = "Error: cannot parse AC variables: " + timing_period + "=" + period_value
                         # self.__put_data_log("Error: cannot parse AC variables: " + timing_period)
@@ -264,6 +297,8 @@ class CheckInfo:
                     pattern_index = self.print_inst_info_col_cnt + dps_count
                     self.work_sheet.write(0, pattern_index, 'PatternName_0')
                     self.work_sheet.write(0, pattern_index + 1, 'Period_0')
+                    if self.cycle_mode == "Frequency":
+                        self.work_sheet.write(0, pattern_index + 1, 'Freq_0')
                     self.work_sheet.write(0, pattern_index + 2, 'Clock_0')
                     self.work_sheet.set_column(pattern_index, pattern_index, 40)
                     if ',' not in pattern_name:
@@ -289,21 +324,17 @@ class CheckInfo:
                                 period_val, clk_val = "", ""
                                 self.__put_data_log("Warning: cannot read pattern file: " + pattern_name)
                                 print("Warning: cannot read pattern file: " + pattern_name)
-                            self.work_sheet.write(0, pattern_index_new,
-                                                  'PatternName_' + str(pattern_index))
-                            self.work_sheet.write(flow_table_index + 1, pattern_index_new,
-                                                  pattern_name)
+                            self.work_sheet.write(0, pattern_index_new, 'PatternName_' + str(pattern_index))
+                            self.work_sheet.write(flow_table_index + 1, pattern_index_new, pattern_name)
                             self.work_sheet.set_column(pattern_index_new, pattern_index_new, 40)
 
-                            self.work_sheet.write(0, pattern_index_new + 1,
-                                                  'Period_' + str(pattern_index))
-                            self.work_sheet.write(flow_table_index + 1, pattern_index_new + 1,
-                                                  period_val) #xxxx
+                            self.work_sheet.write(0, pattern_index_new + 1, 'Period_' + str(pattern_index))
+                            if self.cycle_mode == "Frequency":
+                                self.work_sheet.write(0, pattern_index_new + 1, 'Freq_' + str(pattern_index))
+                            self.work_sheet.write(flow_table_index + 1, pattern_index_new + 1, period_val) #xxxx
 
-                            self.work_sheet.write(0, pattern_index_new + 2,
-                                                  'Clock_' + str(pattern_index))
-                            self.work_sheet.write(flow_table_index + 1, pattern_index_new + 2,
-                                                  clk_val)  # xxxx
+                            self.work_sheet.write(0, pattern_index_new + 2, 'Clock_' + str(pattern_index))
+                            self.work_sheet.write(flow_table_index + 1, pattern_index_new + 2, clk_val)  # xxxx
                 else:
                     pass
                 if flow_table_index != write_row_start:
