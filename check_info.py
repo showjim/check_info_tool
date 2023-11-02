@@ -269,13 +269,13 @@ class CheckInfo:
                             mcg_clk_dic[k] = self.__spec_calculation(v, self.ac_spec_dict, category_name, selector_name)
                             tmpStr = tmpStr + k + ":" + mcg_clk_dic[k] + ";"
                         clk_val = tmpStr
-                    break
+                    # break
                 else:
                     period_val, clk_val = "", ""
                     self.__put_data_log("Warning: Tset(" + tset_name + ") in pattern(" + pattern_name + ") is not list in TSB: " + timing_name)
                     print("Warning: Tset(" + tset_name + ") in pattern(" + pattern_name + ") is not list in TSB: " + timing_name)
-            period_val_list.append(period_val)
-            clk_val_list.append(clk_val)
+                period_val_list.append(period_val)
+                clk_val_list.append(clk_val)
         else:
             period_val_list, clk_val_list = [""], [""]
         return period_val_list, clk_val_list
