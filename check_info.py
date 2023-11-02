@@ -236,11 +236,15 @@ class CheckInfo:
     def __extract_per_clk(self, pattern_name: str, timing_name: str, category_name: str, selector_name: str):
         # get tset from pattern
         period_val, clk_val = "", ""
+        period_val_list, clk_val_list = [], []
         if self.pattern_path != "":
-            ppat = ParsePatternSet()
-            ppat.read_tset_from_pattern(self.pattern_path, pattern_name)
-            tset_name_list = ppat.get_pattern_tset()
-            self.tset_dict[pattern_name] = tset_name_list
+            if pattern_name in self.tset_dict.keys():
+                tset_name_list = self.tset_dict[pattern_name]
+            else:
+                ppat = ParsePatternSet()
+                ppat.read_tset_from_pattern(self.pattern_path, pattern_name)
+                tset_name_list = ppat.get_pattern_tset()
+                self.tset_dict[pattern_name] = tset_name_list
 
             for tset_name in tset_name_list:
                 if tset_name.upper() in self.tsb_dict[timing_name].keys():
@@ -270,9 +274,11 @@ class CheckInfo:
                     period_val, clk_val = "", ""
                     self.__put_data_log("Warning: Tset(" + tset_name + ") in pattern(" + pattern_name + ") is not list in TSB: " + timing_name)
                     print("Warning: Tset(" + tset_name + ") in pattern(" + pattern_name + ") is not list in TSB: " + timing_name)
+            period_val_list.append(period_val)
+            clk_val_list.append(clk_val)
         else:
-            period_val, clk_val = "", ""
-        return period_val, clk_val
+            period_val_list, clk_val_list = [""], [""]
+        return period_val_list, clk_val_list
 
     def __pattern_period_clk_process(self, dps_count, write_row_start, flow_table_info, flow_table_directory):
         test_suite_name = flow_table_info['Parameter']
@@ -304,24 +310,24 @@ class CheckInfo:
                     if ',' not in pattern_name:
                         # get period & clk
                         try:
-                            period_val, clk_val = self.__extract_per_clk(pattern_name, timing_name, category_name, selector_name)
+                            period_val_list, clk_val_list = self.__extract_per_clk(pattern_name, timing_name, category_name, selector_name)
                         except Exception as e:
-                            period_val, clk_val = "", ""
+                            period_val_list, clk_val_list = [""], [""]
                             self.__put_data_log("Warning: cannot read pattern file: " + pattern_name)
                             print("Warning: cannot read pattern file: " + pattern_name)
                         self.work_sheet.write(flow_table_index + 1, pattern_index, pattern_name)
-                        self.work_sheet.write(flow_table_index + 1, pattern_index + 1, period_val) #xxxx
-                        self.work_sheet.write(flow_table_index + 1, pattern_index + 2, clk_val)
+                        self.work_sheet.write(flow_table_index + 1, pattern_index + 1, ",".join(period_val_list)) #xxxx
+                        self.work_sheet.write(flow_table_index + 1, pattern_index + 2, ",".join(clk_val_list))
                     else:
                         pattern_list = pattern_name.split(",")
                         for pattern_index, pattern_name in enumerate(pattern_list):
                             pattern_index_new = self.print_inst_info_col_cnt + dps_count + 3 * pattern_index
                             # get period & clk
                             try:
-                                period_val, clk_val = self.__extract_per_clk(pattern_name, timing_name, category_name,
+                                period_val_list, clk_val_list = self.__extract_per_clk(pattern_name, timing_name, category_name,
                                                                              selector_name)
                             except Exception as e:
-                                period_val, clk_val = "", ""
+                                period_val_list, clk_val_list = [""], [""]
                                 self.__put_data_log("Warning: cannot read pattern file: " + pattern_name)
                                 print("Warning: cannot read pattern file: " + pattern_name)
                             self.work_sheet.write(0, pattern_index_new, 'PatternName_' + str(pattern_index))
@@ -331,10 +337,10 @@ class CheckInfo:
                             self.work_sheet.write(0, pattern_index_new + 1, 'Period_' + str(pattern_index))
                             if self.cycle_mode == "Frequency":
                                 self.work_sheet.write(0, pattern_index_new + 1, 'Freq_' + str(pattern_index))
-                            self.work_sheet.write(flow_table_index + 1, pattern_index_new + 1, period_val) #xxxx
+                            self.work_sheet.write(flow_table_index + 1, pattern_index_new + 1, ",".join(period_val_list)) #xxxx
 
                             self.work_sheet.write(0, pattern_index_new + 2, 'Clock_' + str(pattern_index))
-                            self.work_sheet.write(flow_table_index + 1, pattern_index_new + 2, clk_val)  # xxxx
+                            self.work_sheet.write(flow_table_index + 1, pattern_index_new + 2, ",".join(clk_val_list))  # xxxx
                 else:
                     pass
                 if flow_table_index != write_row_start:
