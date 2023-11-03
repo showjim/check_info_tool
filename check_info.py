@@ -16,6 +16,7 @@ import datetime
 import xlrd
 import traceback
 import xlsxwriter
+from itertools import chain
 
 
 class LastFlowInfo:
@@ -136,7 +137,8 @@ class CheckInfo:
         row_num = 0
         for key, value in my_dict.items():
             worksheet.write(row_num, 0, key)
-            worksheet.write_row(row_num, 1, value)
+            tmp_list = list(chain.from_iterable(zip(value.keys(), value.values())))
+            worksheet.write_row(row_num, 1, tmp_list)
             row_num += 1
 
     def __put_data_log(self, data_log):
@@ -239,12 +241,12 @@ class CheckInfo:
         period_val_list, clk_val_list = [], []
         if self.pattern_path != "":
             if pattern_name in self.tset_dict.keys():
-                tset_name_list = self.tset_dict[pattern_name]
+                tset_name_list = self.tset_dict[pattern_name].keys()
             else:
                 ppat = ParsePatternSet()
                 ppat.read_tset_from_pattern(self.pattern_path, pattern_name)
                 tset_name_list = ppat.get_pattern_tset()
-                self.tset_dict[pattern_name] = tset_name_list
+                # self.tset_dict[pattern_name] = tset_name_list
 
             for tset_name in tset_name_list:
                 if tset_name.upper() in self.tsb_dict[timing_name].keys():
@@ -282,6 +284,7 @@ class CheckInfo:
                     print("Warning: Tset(" + tset_name + ") in pattern(" + pattern_name + ") is not list in TSB: " + timing_name)
                 period_val_list.append(period_val)
                 clk_val_list.append(clk_val)
+            self.tset_dict[pattern_name] = dict(zip(tset_name_list, period_val_list))
         else:
             period_val_list, clk_val_list = [""], [""]
         return period_val_list, clk_val_list
