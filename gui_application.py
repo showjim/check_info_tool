@@ -3,8 +3,9 @@ import tkinter.font as tf
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
+import threading
 
-_VERSION = "Beta 1.4.2"
+_VERSION = "Beta 1.4.4"
 
 class Application(tk.Tk):
 
@@ -44,8 +45,8 @@ class Application(tk.Tk):
 
         label = tk.Label(top_frame, text='Test Program:')
         entry = tk.Entry(top_frame, textvariable=self.entry_var, width=40)
-        load_button = tk.Button(top_frame, command=self.import_flow, text='Load', width=8)
-        run_button = tk.Button(top_frame, command=self.run, text='Run') #, width=8
+        self.load_button = tk.Button(top_frame, command=self.import_flow, text='Load', width=8)
+        self.run_button = tk.Button(top_frame, command=lambda: self.thread_it(self.run), text='Run') #, width=8
         combobox = ttk.Combobox(top_frame, values=items, textvariable=self.key_var, width=12)
         sep_label = tk.Label(top_frame, text='Report Config:')
         sep = ttk.Separator(top_frame, orient="horizontal")
@@ -53,17 +54,19 @@ class Application(tk.Tk):
         check_box1 = ttk.Radiobutton(top_frame, text=u'Period', variable=self.cycle_format_var, value='Period')
         check_box2 = ttk.Radiobutton(top_frame, text=u'Frequency', variable=self.cycle_format_var, value='Frequency')
         self.cycle_format_var.set('Period')
+        self.progressbarOne = ttk.Progressbar(top_frame) # length=180, style='grey.Horizontal.TProgressbar')
 
         label.grid(row=0, column=0, padx=5, pady=5)
         entry.grid(row=0, column=1, padx=5, pady=5)
         combobox.grid(row=0, column=2, padx=5, pady=5)
-        load_button.grid(row=0, column=3, padx=5, pady=5)
-        run_button.grid(row=0, column=4, padx=5, pady=5)
+        self.load_button.grid(row=0, column=3, padx=5, pady=5)
+        self.run_button.grid(row=0, column=4, padx=5, pady=5)
         sep.grid(row=1, column=0, rowspan=1, columnspan=5, sticky='EW', padx=5, pady=5)
         sep_label.grid(row=2, column=0, sticky='E', padx=5, pady=5)
         check_box_Label.grid(row=2, column=1, sticky='E')
         check_box1.grid(row=2, column=2)#, sticky='W')
         check_box2.grid(row=2, column=3)#, sticky='E')
+        self.progressbarOne.grid(row=3, column=0, columnspan=5, sticky='EW', padx=5, pady=5)
 
         right_bar = tk.Scrollbar(content_frame, orient=tk.VERTICAL)
         bottom_bar = tk.Scrollbar(content_frame, orient=tk.HORIZONTAL)
@@ -94,7 +97,11 @@ class Application(tk.Tk):
         self.sub_root_flag = False
 
     def run(self):
+        self.switchButtonState(self.load_button)
+        self.switchButtonState(self.run_button)
         self.check_info.run(self.flow_table_set)
+        self.switchButtonState(self.load_button)
+        self.switchButtonState(self.run_button)
 
     def get_flow_selected(self):
         return self.flow_table_set
@@ -118,7 +125,7 @@ class Application(tk.Tk):
         if not self.sub_root_flag:
             self.sub_root_flag = True
             self.put_data_log('===============================START===============================')
-            self.check_info.read_device(self.entry_var.get(), self.power_var.get(), self.pattern_var.get(), self.key_var.get(), self.textbox, self.cycle_format_var.get())
+            self.check_info.read_device(self.entry_var.get(), self.power_var.get(), self.pattern_var.get(), self.key_var.get(), self.textbox, self.cycle_format_var.get(), self.progressbarOne)
             job_list_dict = self.check_info.get_job_list()
             sub_root = tk.Tk()
             sub_root.title('Select Flow Table')
@@ -147,6 +154,18 @@ class Application(tk.Tk):
     def add_menu(self, menu):
         menu(self)
 
+    def thread_it(self, func, *args):
+        """ 将函数打包进线程 """
+        self.myThread = threading.Thread(target=func, args=args)
+        self.myThread.setDaemon(True)  # 主线程退出就直接让子线程跟随退出,不论是否运行完成。
+        self.myThread.start()
+
+    def switchButtonState(self, button):
+        if (button['state'] == tk.NORMAL):
+            button['state'] = tk.DISABLED
+        else:
+            button['state'] = tk.NORMAL
+
 
 class Menu:
 
@@ -172,21 +191,25 @@ class Menu:
         self.menu_bar.add_cascade(label="Help", menu=help_menu)
 
         root.config(menu=self.menu_bar)
+        self.put_data_log = root.put_data_log
 
     def file_open(self):
         target_file = filedialog.askopenfilename()
         self.device_path.set('')
         self.device_path.set(target_file)
+        self.put_data_log('Info: Get IG-XL Path: ' + target_file)
 
     def directory_open(self):
         target_file = filedialog.askdirectory()
         self.device_path.set('')
         self.device_path.set(target_file)
+        self.put_data_log('Info: Get IG-XL ASCII Dir Path: ' + target_file)
 
     def pattern_open(self):
         target_file = filedialog.askdirectory()
         self.pattern_path.set('')
         self.pattern_path.set(target_file)
+        self.put_data_log('Info: Get Pattern Dir Path: ' + target_file)
 
     def set_power_order(self):
         target_file = filedialog.askopenfilename()

@@ -47,6 +47,8 @@ class CheckInfo:
         self.write_row_index = 0
         self.cycle_mode = ""
         self.tset_dict = {}
+        self.pat2inst_dict ={}
+        self.progressbarOne = None
 
     def reset(self):
         self.power_order_path = ''
@@ -68,12 +70,15 @@ class CheckInfo:
         self.write_row_index = 0
         self.cycle_mode = ""
         self.tset_dict = {}
+        self.pat2inst_dict = {}
+        self.progressbarOne = None
 
-    def read_device(self, device_path, power_order_path, pattern_path, platform, text, cycle_mode):
+    def read_device(self, device_path, power_order_path, pattern_path, platform, text, cycle_mode, progressbarOne):
         self.reset()
         self.text = text
         self.platform = platform
         self.cycle_mode = cycle_mode
+        self.progressbarOne = progressbarOne
         if power_order_path != '':
             self.__put_data_log("Import Power Order File: " + power_order_path)
         self.power_order_path = power_order_path
@@ -118,13 +123,16 @@ class CheckInfo:
             self.format_red = work_book.add_format({'bg_color': '#FFC7CE'})
             self.format_yellow = work_book.add_format({'bg_color': '#F7D674'})
             self.format_orange = work_book.add_format({'bg_color': '#FFAA33'})
+            self.progressbarOne['value'] = 0
+            self.progressbarOne['maximum'] = 100
             for flow_name in flow_table_set:
                 self.work_sheet = work_book.add_worksheet(flow_name)
                 self.work_sheet.outline_settings(True, False, True, False)
                 flow_path = self.device_directory + '/' + flow_name + '.txt'
                 self.__run_each_flow(flow_path)
-            tset_work_sheet = work_book.add_worksheet("Pattern_Tset_List")
-            self.write_dict_to_excel(self.tset_dict, tset_work_sheet)
+            tset_work_sheet = work_book.add_worksheet("PatTsetMap_" + flow_name)
+            self.progressbarOne['value'] = 90
+            self.write_dict_to_excel(self.pat2inst_dict, self.tset_dict, tset_work_sheet)
             work_book.close()
             self.__put_data_log('Output file path is: ' + output_name)
             self.__put_data_log('Execution successful!!!')
@@ -133,13 +141,29 @@ class CheckInfo:
             self.__put_data_log('An exception occurred!Please check!!!')
             self.__put_data_log(str(e))
             traceback.print_exc()
-    def write_dict_to_excel(self, my_dict, worksheet):
-        row_num = 0
+    def write_dict_to_excel(self, pat2inst_dict, my_dict, worksheet):
+        worksheet.write(0, 0, 'Instances')
+        worksheet.write(0, 1, 'Pattern')
+        worksheet.write(0, 2, 'Tset_0')
+        if self.cycle_mode == "Period":
+            worksheet.write(0, 3, 'Period_0')
+        else:
+            worksheet.write(0, 3, 'Frequency_0')
+        row_num = 1
         for key, value in my_dict.items():
-            worksheet.write(row_num, 0, key)
+            worksheet.write(row_num, 0, ",".join(pat2inst_dict[key]))
+            worksheet.write(row_num, 1, key)
             tmp_list = list(chain.from_iterable(zip(value.keys(), value.values())))
-            worksheet.write_row(row_num, 1, tmp_list)
+            if len(value.keys()) > 1:
+                for i in range(len(value.keys())):
+                    worksheet.write(0, 2 + i * 2, 'Tset_' + str(i))
+                    if self.cycle_mode == "Period":
+                        worksheet.write(0, 2 + i * 2 + 1, 'Period_' + str(i))
+                    else:
+                        worksheet.write(0, 2 + i * 2 + 1, 'Frequency_' + str(i))
+            worksheet.write_row(row_num, 2, tmp_list)
             row_num += 1
+            self.progressbarOne['value'] = 90 + 10*row_num/len(my_dict)
 
     def __put_data_log(self, data_log):
         self.text.insert(tk.END, data_log + '\n')
@@ -320,6 +344,11 @@ class CheckInfo:
                         # get period & clk
                         try:
                             period_val_list, clk_val_list = self.__extract_per_clk(pattern_name, timing_name, category_name, selector_name)
+                            # store pat2inst map
+                            if pattern_name not in self.pat2inst_dict.keys():
+                                self.pat2inst_dict[pattern_name] = [test_suite_name]
+                            else:
+                                self.pat2inst_dict[pattern_name].append(test_suite_name)
                         except Exception as e:
                             period_val_list, clk_val_list = [""], [""]
                             self.__put_data_log("Warning: cannot read pattern file: " + pattern_name)
@@ -335,6 +364,11 @@ class CheckInfo:
                             try:
                                 period_val_list, clk_val_list = self.__extract_per_clk(pattern_name, timing_name, category_name,
                                                                              selector_name)
+                                # store pat2inst map
+                                if pattern_name not in self.pat2inst_dict.keys():
+                                    self.pat2inst_dict[pattern_name] = [test_suite_name]
+                                else:
+                                    self.pat2inst_dict[pattern_name].append(test_suite_name)
                             except Exception as e:
                                 period_val_list, clk_val_list = [""], [""]
                                 self.__put_data_log("Warning: cannot read pattern file: " + pattern_name)
@@ -450,6 +484,7 @@ class CheckInfo:
             self.MAX_DSP_CNT = col_cnt
 
     def __run_each_flow(self, flow_path):
+        self.progressbarOne['value'] = 1
         flow_table_directory = '/'.join(flow_path.split('/')[:-1])
         flow_table = flow_path.split('/')[-1]
         pre_flow_name = flow_table.split('.')[0]
@@ -491,6 +526,7 @@ class CheckInfo:
             test_instance_list = [os.path.join(flow_table_directory, test_instance_name.replace(' ', '%20') + '.txt') for test_instance_name
                                   in
                                   test_instance_list if test_instance_list]
+            self.progressbarOne['value'] = 2
 
             # self.pattern_set_dict = {}
             if self.last_flow_info.pattern_set_name != pattern_set_name: # and LastFlowInfo.pattern_set_name is not None:
@@ -504,6 +540,7 @@ class CheckInfo:
                     self.__put_data_log("Warning: cannot read PatternSet, please check it!")
             else:
                 pass
+            self.progressbarOne['value'] = 3
 
             pti = ParseTestInstance()
             if test_instance_list:
@@ -516,6 +553,7 @@ class CheckInfo:
             else:
                 pass
             self.test_instance_dict = pti.get_instance_info()
+            self.progressbarOne['value'] = 4
             # if LastFlowInfo.pattern_set_name != pattern_set_name:
             #     pps = ParsePatternSet()
             #     pps.read_pattern_set(pattern_set_name, self.pattern_path)
@@ -531,6 +569,7 @@ class CheckInfo:
                 self.last_flow_info.dc_spec_name = dc_spec_name
             else:
                 pass
+            self.progressbarOne['value'] = 5
 
             if self.last_flow_info.glob_spec_name != glob_spec_name:
                 pds = ParseGlobalSpec()
@@ -542,6 +581,7 @@ class CheckInfo:
                     self.__put_data_log("Warning: cannot read Global Specs, please check it!")
             else:
                 pass
+            self.progressbarOne['value'] = 6
 
             if self.last_flow_info.ac_spec_name != ac_spec_name:
                 pas = ParseACSpec()
@@ -552,12 +592,15 @@ class CheckInfo:
                 self.last_flow_info.ac_spec_name = ac_spec_name
             else:
                 pass
+            self.progressbarOne['value'] = 7
+
             self.__init()
             for flow_table_index, flow_table_info in enumerate(flow_table_info_list):
                 test_suite_name = flow_table_info['Parameter']
                 flow_table_info_list[flow_table_index]["write_row_start"] = self.write_row_index
                 if test_suite_name in self.test_instance_dict.keys():
                     self.write_row_index += len(self.test_instance_dict[test_suite_name])
+                self.progressbarOne['value'] = 8 + 10 * flow_table_index/len(flow_table_info_list)
 
             for flow_table_index, flow_table_info in enumerate(flow_table_info_list):
                 write_row = flow_table_info_list[flow_table_index]["write_row_start"]
@@ -571,6 +614,7 @@ class CheckInfo:
                     self.__put_data_log(str(flow_table_index) + " - " + flow_table_info.__str__())
                     print(flow_table_index,flow_table_info)
                 self.write_row_index += 1
+                self.progressbarOne['value'] = 19 + 10 * flow_table_index/len(flow_table_info_list)
 
             # Without Pandas, first write instance name/power, then write pat to align column
             for flow_table_index, flow_table_info in enumerate(flow_table_info_list):
@@ -584,3 +628,4 @@ class CheckInfo:
                     self.__put_data_log(str(e))
                     self.__put_data_log(str(flow_table_index) + " - " + flow_table_info.__str__())
                     print(flow_table_index,flow_table_info)
+                self.progressbarOne['value'] = 30 + 60 * flow_table_index / len(flow_table_info_list)
