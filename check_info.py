@@ -123,7 +123,7 @@ class CheckInfo:
             self.format_red = work_book.add_format({'bg_color': '#FFC7CE'})
             self.format_yellow = work_book.add_format({'bg_color': '#F7D674'})
             self.format_orange = work_book.add_format({'bg_color': '#FFAA33'})
-            self.progressbarOne['value'] = 0
+            self.update_progressbar(0)
             self.progressbarOne['maximum'] = 100
             for flow_name in flow_table_set:
                 self.work_sheet = work_book.add_worksheet(flow_name)
@@ -131,7 +131,6 @@ class CheckInfo:
                 flow_path = self.device_directory + '/' + flow_name + '.txt'
                 self.__run_each_flow(flow_path)
             tset_work_sheet = work_book.add_worksheet("PatTsetMap_" + flow_name)
-            self.progressbarOne['value'] = 90
             self.write_dict_to_excel(self.pat2inst_dict, self.tset_dict, tset_work_sheet)
             work_book.close()
             self.__put_data_log('Output file path is: ' + output_name)
@@ -163,7 +162,7 @@ class CheckInfo:
                         worksheet.write(0, 2 + i * 2 + 1, 'Frequency_' + str(i))
             worksheet.write_row(row_num, 2, tmp_list)
             row_num += 1
-            self.progressbarOne['value'] = 90 + 10*row_num/len(my_dict)
+            self.update_progressbar(90 + 10*row_num/len(my_dict))
 
     def __put_data_log(self, data_log):
         self.text.insert(tk.END, data_log + '\n')
@@ -483,8 +482,12 @@ class CheckInfo:
         if self.MAX_DSP_CNT < col_cnt:
             self.MAX_DSP_CNT = col_cnt
 
+    def update_progressbar(self, val):
+        self.progressbarOne['value'] = val
+        self.progressbarOne.update_idletasks()
+
     def __run_each_flow(self, flow_path):
-        self.progressbarOne['value'] = 1
+        self.update_progressbar(1)
         flow_table_directory = '/'.join(flow_path.split('/')[:-1])
         flow_table = flow_path.split('/')[-1]
         pre_flow_name = flow_table.split('.')[0]
@@ -526,7 +529,7 @@ class CheckInfo:
             test_instance_list = [os.path.join(flow_table_directory, test_instance_name.replace(' ', '%20') + '.txt') for test_instance_name
                                   in
                                   test_instance_list if test_instance_list]
-            self.progressbarOne['value'] = 2
+            self.update_progressbar(2)
 
             # self.pattern_set_dict = {}
             if self.last_flow_info.pattern_set_name != pattern_set_name: # and LastFlowInfo.pattern_set_name is not None:
@@ -540,7 +543,7 @@ class CheckInfo:
                     self.__put_data_log("Warning: cannot read PatternSet, please check it!")
             else:
                 pass
-            self.progressbarOne['value'] = 3
+            self.update_progressbar(3)
 
             pti = ParseTestInstance()
             if test_instance_list:
@@ -553,7 +556,7 @@ class CheckInfo:
             else:
                 pass
             self.test_instance_dict = pti.get_instance_info()
-            self.progressbarOne['value'] = 4
+            self.update_progressbar(4)
             # if LastFlowInfo.pattern_set_name != pattern_set_name:
             #     pps = ParsePatternSet()
             #     pps.read_pattern_set(pattern_set_name, self.pattern_path)
@@ -569,7 +572,7 @@ class CheckInfo:
                 self.last_flow_info.dc_spec_name = dc_spec_name
             else:
                 pass
-            self.progressbarOne['value'] = 5
+            self.update_progressbar(5)
 
             if self.last_flow_info.glob_spec_name != glob_spec_name:
                 pds = ParseGlobalSpec()
@@ -581,7 +584,7 @@ class CheckInfo:
                     self.__put_data_log("Warning: cannot read Global Specs, please check it!")
             else:
                 pass
-            self.progressbarOne['value'] = 6
+            self.update_progressbar(6)
 
             if self.last_flow_info.ac_spec_name != ac_spec_name:
                 pas = ParseACSpec()
@@ -592,7 +595,7 @@ class CheckInfo:
                 self.last_flow_info.ac_spec_name = ac_spec_name
             else:
                 pass
-            self.progressbarOne['value'] = 7
+            self.update_progressbar(7)
 
             self.__init()
             for flow_table_index, flow_table_info in enumerate(flow_table_info_list):
@@ -600,7 +603,7 @@ class CheckInfo:
                 flow_table_info_list[flow_table_index]["write_row_start"] = self.write_row_index
                 if test_suite_name in self.test_instance_dict.keys():
                     self.write_row_index += len(self.test_instance_dict[test_suite_name])
-                self.progressbarOne['value'] = 8 + 10 * flow_table_index/len(flow_table_info_list)
+                self.update_progressbar(8 + 10 * flow_table_index/len(flow_table_info_list))
 
             for flow_table_index, flow_table_info in enumerate(flow_table_info_list):
                 write_row = flow_table_info_list[flow_table_index]["write_row_start"]
@@ -609,12 +612,12 @@ class CheckInfo:
                     dps_count = self.__power_process_and_get_count(flow_table_directory, flow_table_info, write_row)
                     self.save_max_col(dps_count)
                 except Exception as e:
-                    self.__put_data_log("Error fonud in power process:")
+                    self.__put_data_log("Error found in power process:")
                     self.__put_data_log(str(e))
                     self.__put_data_log(str(flow_table_index) + " - " + flow_table_info.__str__())
                     print(flow_table_index,flow_table_info)
                 self.write_row_index += 1
-                self.progressbarOne['value'] = 19 + 10 * flow_table_index/len(flow_table_info_list)
+                self.update_progressbar(19 + 10 * flow_table_index/len(flow_table_info_list))
 
             # Without Pandas, first write instance name/power, then write pat to align column
             for flow_table_index, flow_table_info in enumerate(flow_table_info_list):
@@ -624,8 +627,8 @@ class CheckInfo:
                     #     print("OK")
                     self.__pattern_period_clk_process(self.MAX_DSP_CNT, write_row, flow_table_info, flow_table_directory)
                 except Exception as e:
-                    self.__put_data_log("Error fonud in pattern/timing process:")
+                    self.__put_data_log("Error found in pattern/timing process:")
                     self.__put_data_log(str(e))
                     self.__put_data_log(str(flow_table_index) + " - " + flow_table_info.__str__())
                     print(flow_table_index,flow_table_info)
-                self.progressbarOne['value'] = 30 + 60 * flow_table_index / len(flow_table_info_list)
+                self.update_progressbar(30 + 60 * flow_table_index / len(flow_table_info_list))
