@@ -4,11 +4,22 @@ import os.path
 
 def get_flow_content(line_list, platform):
     if "UltraFLEX" in platform:
-        flow_info = {'Opcode': line_list[6], 'Parameter': line_list[7].upper(), 'TestNumber': line_list[9],
-                     'HardBin': line_list[16], 'SoftBin': line_list[18], 'Result': line_list[19]}
+        if len(line_list) <= 8:
+            flow_info = {'Opcode': line_list[6], 'Parameter': line_list[7].upper(), 'TestNumber': '',
+                         'HardBin': '', 'SoftBin': '', 'Result': ''}
+        else:
+            flow_info = {'Opcode': line_list[6], 'Parameter': line_list[7].upper(), 'TestNumber': line_list[9],
+                         'HardBin': line_list[16], 'SoftBin': line_list[18], 'Result': line_list[19]}
     else:  # J750
-        flow_info = {'Opcode': line_list[6], 'Parameter': line_list[7].upper(), 'TestNumber': line_list[9],
-                     'HardBin': line_list[11], 'SoftBin': line_list[13], 'Result': line_list[14]}
+        try:
+            if len(line_list) <= 8:
+                flow_info = {'Opcode': line_list[6], 'Parameter': line_list[7].upper(), 'TestNumber': '',
+                             'HardBin': '', 'SoftBin': '', 'Result': ''}
+            else:
+                flow_info = {'Opcode': line_list[6], 'Parameter': line_list[7].upper(), 'TestNumber': line_list[9],
+                             'HardBin': line_list[11], 'SoftBin': line_list[13], 'Result': line_list[14]}
+        except Exception as e:
+            print(e)
     return flow_info
 
 
