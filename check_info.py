@@ -117,7 +117,7 @@ class CheckInfo:
     def run(self, flow_table_set):
         try:
             time = datetime.datetime.now()
-            current_time = str(time.year) + str(time.month) + str(time.day) + "-" + str(time.hour) + str(time.minute) + str(time.second)
+            current_time = str(datetime.date.today()) + "__" + str(time.hour) + str(time.minute) + str(time.second)
             output_name = 'CheckInfo_' + current_time + '.xlsx'
             work_book = xlsxwriter.Workbook(output_name)
             self.format_red = work_book.add_format({'bg_color': '#FFC7CE'})
@@ -288,7 +288,7 @@ class CheckInfo:
                         # print("Error: cannot parse AC variables: " + timing_period)
 
                     clk_val = ""
-                    if mcg_clk_dic.__len__() > 0:
+                    if len(mcg_clk_dic) > 0:
                         tmpStr = ''
                         for k, v in mcg_clk_dic.items():
                             try:
@@ -305,6 +305,10 @@ class CheckInfo:
                     period_val, clk_val = "", ""
                     self.__put_data_log("Warning: Tset(" + tset_name + ") in pattern(" + pattern_name + ") is not list in TSB: " + timing_name)
                     print("Warning: Tset(" + tset_name + ") in pattern(" + pattern_name + ") is not list in TSB: " + timing_name)
+                # in case same pattern with diff AC spec, which leads to diff period
+                if pattern_name in self.tset_dict.keys():
+                    # if period_val not in self.tset_dict[pattern_name][tset_name]:
+                    period_val = self.tset_dict[pattern_name][tset_name] + "," + period_val
                 period_val_list.append(period_val)
                 clk_val_list.append(clk_val)
             self.tset_dict[pattern_name] = dict(zip(tset_name_list, period_val_list))

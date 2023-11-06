@@ -5,7 +5,7 @@ from tkinter import filedialog
 from tkinter import messagebox
 import threading
 
-_VERSION = "Beta 1.4.4"
+_VERSION = "Beta 1.4.5"
 
 class Application(tk.Tk):
 
