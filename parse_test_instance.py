@@ -61,6 +61,10 @@ class ParseTestInstance:
                             if pattern_info != "":
                                 self.__test_instance_dict[inst_name].append(self.__get_instance_content(line_list, pattern_info))
                             else:
+                                if "UltraFLEX" in platform:
+                                    test_instance_line = "\t".join(line_list[:144])
+                                else:
+                                    test_instance_line = "\t".join(line_list[:93])
                                 self.find_pat_path(pat_pattern, test_instance_line, line_list)
                     else:
                         pass
