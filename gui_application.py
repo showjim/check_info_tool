@@ -157,7 +157,7 @@ class Application(tk.Tk):
     def thread_it(self, func, *args):
         """ 将函数打包进线程 """
         self.myThread = threading.Thread(target=func, args=args)
-        self.myThread.setDaemon(True)  # 主线程退出就直接让子线程跟随退出,不论是否运行完成。
+        self.myThread.daemon = True  # 主线程退出就直接让子线程跟随退出,不论是否运行完成。
         self.myThread.start()
 
     def switchButtonState(self, button):
