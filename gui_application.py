@@ -125,7 +125,11 @@ class Application(tk.Tk):
         if not self.sub_root_flag:
             self.sub_root_flag = True
             self.put_data_log('===============================START===============================')
-            self.check_info.read_device(self.entry_var.get(), self.power_var.get(), self.pattern_var.get(), self.key_var.get(), self.textbox, self.cycle_format_var.get(), self.progressbarOne)
+            def send_log(data_log):
+                self.textbox.insert(tk.END, data_log + '\n')
+                self.textbox.see(tk.END)
+                self.textbox.update()
+            self.check_info.read_device(self.entry_var.get(), self.power_var.get(), self.pattern_var.get(), self.key_var.get(), send_log, self.cycle_format_var.get(), self.progressbarOne)
             job_list_dict = self.check_info.get_job_list()
             sub_root = tk.Tk()
             sub_root.title('Select Flow Table')

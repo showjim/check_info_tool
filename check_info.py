@@ -165,9 +165,10 @@ class CheckInfo:
             self.update_progressbar(90 + 10*row_num/len(my_dict))
 
     def __put_data_log(self, data_log):
-        self.text.insert(tk.END, data_log + '\n')
-        self.text.see(tk.END)
-        self.text.update()
+        self.text(data_log)
+        # self.text.insert(tk.END, data_log + '\n')
+        # self.text.see(tk.END)
+        # self.text.update()
 
     def __init(self):
         self.work_sheet.write(0, 0, 'Opcode')
