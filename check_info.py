@@ -115,15 +115,15 @@ class CheckInfo:
         return self.job_list_dict
 
     def run(self, flow_table_set):
+        time = datetime.datetime.now()
+        current_time = str(datetime.date.today()) + "__" + str(time.hour) + str(time.minute) + str(time.second)
+        output_name = 'CheckInfo_' + current_time + '.xlsx'
+        work_book = xlsxwriter.Workbook(output_name)
+        self.format_red = work_book.add_format({'bg_color': '#FFC7CE'})
+        self.format_yellow = work_book.add_format({'bg_color': '#F7D674'})
+        self.format_orange = work_book.add_format({'bg_color': '#FFAA33'})
+        self.update_progressbar(0)
         try:
-            time = datetime.datetime.now()
-            current_time = str(datetime.date.today()) + "__" + str(time.hour) + str(time.minute) + str(time.second)
-            output_name = 'CheckInfo_' + current_time + '.xlsx'
-            work_book = xlsxwriter.Workbook(output_name)
-            self.format_red = work_book.add_format({'bg_color': '#FFC7CE'})
-            self.format_yellow = work_book.add_format({'bg_color': '#F7D674'})
-            self.format_orange = work_book.add_format({'bg_color': '#FFAA33'})
-            self.update_progressbar(0)
             for flow_name in flow_table_set:
                 self.work_sheet = work_book.add_worksheet(flow_name)
                 self.work_sheet.outline_settings(True, False, True, False)
@@ -139,6 +139,7 @@ class CheckInfo:
             self.__put_data_log('An exception occurred!Please check!!!')
             self.__put_data_log(str(e))
             traceback.print_exc()
+            work_book.close()
     def write_dict_to_excel(self, pat2inst_dict, my_dict, worksheet):
         worksheet.write(0, 0, 'Instances')
         worksheet.write(0, 1, 'Pattern')
