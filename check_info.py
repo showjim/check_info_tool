@@ -124,7 +124,6 @@ class CheckInfo:
             self.format_yellow = work_book.add_format({'bg_color': '#F7D674'})
             self.format_orange = work_book.add_format({'bg_color': '#FFAA33'})
             self.update_progressbar(0)
-            self.progressbarOne['maximum'] = 100
             for flow_name in flow_table_set:
                 self.work_sheet = work_book.add_worksheet(flow_name)
                 self.work_sheet.outline_settings(True, False, True, False)
@@ -488,8 +487,7 @@ class CheckInfo:
             self.MAX_DSP_CNT = col_cnt
 
     def update_progressbar(self, val):
-        self.progressbarOne['value'] = val
-        self.progressbarOne.update_idletasks()
+        self.progressbarOne(val)
 
     def __run_each_flow(self, flow_path):
         self.update_progressbar(1)

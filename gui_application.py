@@ -7,6 +7,7 @@ import threading
 
 _VERSION = "Beta 1.4.7"
 
+
 class Application(tk.Tk):
 
     def __init__(self, check_info_instance):
@@ -30,7 +31,7 @@ class Application(tk.Tk):
         items = ['UltraFLEX Plus', 'UltraFLEX', 'J750']
         self.cycle_format_var = tk.StringVar()
 
-        top_frame = tk.Frame(self, borderwidth=1)#, height=80)
+        top_frame = tk.Frame(self, borderwidth=1)  # , height=80)
         content_frame = tk.Frame(self, borderwidth=1)
 
         top_frame.rowconfigure(0, weight=0)
@@ -46,7 +47,7 @@ class Application(tk.Tk):
         label = tk.Label(top_frame, text='Test Program:')
         entry = tk.Entry(top_frame, textvariable=self.entry_var, width=40)
         self.load_button = tk.Button(top_frame, command=self.import_flow, text='Load', width=8)
-        self.run_button = tk.Button(top_frame, command=lambda: self.thread_it(self.run), text='Run') #, width=8
+        self.run_button = tk.Button(top_frame, command=lambda: self.thread_it(self.run), text='Run')  # , width=8
         combobox = ttk.Combobox(top_frame, values=items, textvariable=self.key_var, width=12)
         sep_label = tk.Label(top_frame, text='Report Config:')
         sep = ttk.Separator(top_frame, orient="horizontal")
@@ -54,7 +55,7 @@ class Application(tk.Tk):
         check_box1 = ttk.Radiobutton(top_frame, text=u'Period', variable=self.cycle_format_var, value='Period')
         check_box2 = ttk.Radiobutton(top_frame, text=u'Frequency', variable=self.cycle_format_var, value='Frequency')
         self.cycle_format_var.set('Period')
-        self.progressbarOne = ttk.Progressbar(top_frame) # length=180, style='grey.Horizontal.TProgressbar')
+        self.progressbarOne = ttk.Progressbar(top_frame, orient=tk.HORIZONTAL, length=100, mode='determinate')  # length=180, style='grey.Horizontal.TProgressbar')
 
         label.grid(row=0, column=0, padx=5, pady=5)
         entry.grid(row=0, column=1, padx=5, pady=5)
@@ -64,8 +65,8 @@ class Application(tk.Tk):
         sep.grid(row=1, column=0, rowspan=1, columnspan=5, sticky='EW', padx=5, pady=5)
         sep_label.grid(row=2, column=0, sticky='E', padx=5, pady=5)
         check_box_Label.grid(row=2, column=1, sticky='E')
-        check_box1.grid(row=2, column=2)#, sticky='W')
-        check_box2.grid(row=2, column=3)#, sticky='E')
+        check_box1.grid(row=2, column=2)  # , sticky='W')
+        check_box2.grid(row=2, column=3)  # , sticky='E')
         self.progressbarOne.grid(row=3, column=0, columnspan=5, sticky='EW', padx=5, pady=5)
 
         right_bar = tk.Scrollbar(content_frame, orient=tk.VERTICAL)
@@ -125,11 +126,16 @@ class Application(tk.Tk):
         if not self.sub_root_flag:
             self.sub_root_flag = True
             self.put_data_log('===============================START===============================')
+
             def send_log(data_log):
                 self.textbox.insert(tk.END, data_log + '\n')
                 self.textbox.see(tk.END)
                 self.textbox.update()
-            self.check_info.read_device(self.entry_var.get(), self.power_var.get(), self.pattern_var.get(), self.key_var.get(), send_log, self.cycle_format_var.get(), self.progressbarOne)
+            def update_processbar(val):
+                self.progressbarOne['value'] = val
+                self.progressbarOne.update_idletasks()
+            self.check_info.read_device(self.entry_var.get(), self.power_var.get(), self.pattern_var.get(),
+                                        self.key_var.get(), send_log, self.cycle_format_var.get(), update_processbar)
             job_list_dict = self.check_info.get_job_list()
             sub_root = tk.Tk()
             sub_root.title('Select Flow Table')
