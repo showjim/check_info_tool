@@ -27,7 +27,7 @@ COPY . /app
 RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
 
 # 暴露 Streamlit 使用的默认端口
-EXPOSE 8501
+EXPOSE 8502
 
 # 运行 Streamlit 应用
 CMD ["streamlit", "run", "check_info_webapp.py"]

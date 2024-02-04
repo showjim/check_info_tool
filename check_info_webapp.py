@@ -107,7 +107,8 @@ def main(app):
 
     flow_selected = flow_selected_placeholder.multiselect("Select flow:", st.session_state["flow_table_list"])
 
-    if st.button('Run'):
+    st.subheader('Step 2. Run to check info')
+    if st.button('Run Check Info'):
         result_file = st.session_state["check_info_app"].run(flow_selected, OutputPath)
         st.session_state["check_info_result"] = result_file
         # Add a completion message to the logs.
@@ -115,7 +116,6 @@ def main(app):
         st.info("Run completed")
 
     if len(st.session_state["check_info_result"]) > 0:
-        st.subheader('Step 5. Download XLSX Result')
         result_file_path = st.session_state["check_info_result"]
         result_file_name = os.path.basename(result_file_path)
         with open(result_file_path, "rb") as file:
