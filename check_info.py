@@ -114,10 +114,10 @@ class CheckInfo:
     def get_job_list(self):
         return self.job_list_dict
 
-    def run(self, flow_table_set):
+    def run(self, flow_table_set, work_dir="./"):
         time = datetime.datetime.now()
         current_time = str(datetime.date.today()) + "__" + str(time.hour) + str(time.minute) + str(time.second)
-        output_name = 'CheckInfo_' + current_time + '.xlsx'
+        output_name = os.path.join(work_dir, 'CheckInfo_' + current_time + '.xlsx')
         work_book = xlsxwriter.Workbook(output_name)
         self.format_red = work_book.add_format({'bg_color': '#FFC7CE'})
         self.format_yellow = work_book.add_format({'bg_color': '#F7D674'})
@@ -140,6 +140,7 @@ class CheckInfo:
             self.__put_data_log(str(e))
             traceback.print_exc()
             work_book.close()
+        return output_name
     def write_dict_to_excel(self, pat2inst_dict, my_dict, worksheet):
         worksheet.write(0, 0, 'Instances')
         worksheet.write(0, 1, 'Pattern')
