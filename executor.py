@@ -1,5 +1,5 @@
-from check_info import CheckInfo
-from gui_application import Application, Menu
+from src.check_info import CheckInfo
+from src.gui_application import Application, Menu
 from tempfile import TemporaryDirectory
 
 def _quit():

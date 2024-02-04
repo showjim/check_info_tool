@@ -1,15 +1,14 @@
-from parse_flow_table import ParseFlowTable
-from parse_dc_spec import ParseDCSpec
-from parse_ac_spec import ParseACSpec
-from parse_glob_spec import ParseGlobalSpec
-from parse_level import ParsePinLevel
-from parse_timing import ParseTIM
-from parse_job_list import ParseJobList
-from parse_pattern_set import ParsePatternSet
-from parse_test_instance import ParseTestInstance
-from common import unzip, format_str
+from src.parse_flow_table import ParseFlowTable
+from src.parse_dc_spec import ParseDCSpec
+from src.parse_ac_spec import ParseACSpec
+from src.parse_glob_spec import ParseGlobalSpec
+from src.parse_level import ParsePinLevel
+from src.parse_timing import ParseTIM
+from src.parse_job_list import ParseJobList
+from src.parse_pattern_set import ParsePatternSet
+from src.parse_test_instance import ParseTestInstance
+from src.common import unzip, format_str
 import collections
-import tkinter as tk
 import os
 import re
 import datetime

@@ -2,10 +2,9 @@ import os
 from pathlib import Path
 from datetime import datetime
 import streamlit as st
-import time
-from check_info import CheckInfo
+from src.check_info import CheckInfo
 from tempfile import TemporaryDirectory
-from gui_application import _VERSION
+from src.gui_application import _VERSION
 
 
 

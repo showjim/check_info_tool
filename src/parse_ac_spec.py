@@ -1,4 +1,4 @@
-from parse_spec import ParseSpec
+from src.parse_spec import ParseSpec
 
 
 class ParseACSpec(ParseSpec):
