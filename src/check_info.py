@@ -635,4 +635,4 @@ class CheckInfo:
                     self.__put_data_log(str(e))
                     self.__put_data_log(str(flow_table_index) + " - " + flow_table_info.__str__())
                     print(flow_table_index,flow_table_info)
-                self.update_progressbar(30 + 60 * flow_table_index / len(flow_table_info_list))
+                self.update_progressbar(30 + 70 * (flow_table_index + 1) / len(flow_table_info_list))

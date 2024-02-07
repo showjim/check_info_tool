@@ -17,7 +17,7 @@ class Application:
         self.flow_table_list = []
 
     def run(self, flow_table, work_dir="./"):
-        st.write("Running checks... (this is a mock implementation)")
+        # st.write("Running checks...")
         return self.check_info.run(flow_table, work_dir)
 
     def import_flow(self, device_path, platform_type, cycle_format, log_area, progressbarOne):
