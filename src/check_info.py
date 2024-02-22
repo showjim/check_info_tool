@@ -175,7 +175,7 @@ class CheckInfo:
         self.work_sheet.write(0, 1, 'Parameter')
         self.work_sheet.write(0, 2, 'TestNumber')
         self.work_sheet.write(0, 3, 'HardBinNumber')
-        self.work_sheet.write(0, 4, 'SoftBinNumber')
+        self.work_sheet.write(0, 4, 'SortBinNumber')
         self.work_sheet.write(0, 5, 'Result')
         # self.work_sheet.write(0, 6, 'MCG CLK(ns)')
 
@@ -192,7 +192,7 @@ class CheckInfo:
                 self.work_sheet.write(flow_table_index + 1, 1, flow_table_info['Parameter'])
                 self.work_sheet.write(flow_table_index + 1, 2, flow_table_info['TestNumber'])
                 self.work_sheet.write(flow_table_index + 1, 3, flow_table_info['HardBin'])
-                self.work_sheet.write(flow_table_index + 1, 4, flow_table_info['SoftBin'])
+                self.work_sheet.write(flow_table_index + 1, 4, flow_table_info['SortBin'])
                 # self.work_sheet.write(flow_table_index + 1, 5, flow_table_info['Result'])
 
                 if flow_table_info['Opcode'] == "nop":

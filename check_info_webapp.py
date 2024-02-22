@@ -33,7 +33,8 @@ class Application:
 # Main Streamlit App
 def main(app):
     st.title(f"Check Info Tool {_VERSION}")
-
+    st.caption('Powered by Streamlit, written by Chao Zhou')
+    st.subheader("", divider='rainbow')
     work_path = os.path.abspath('.')
     WorkPath = os.path.join(work_path, "workDir")
     if not os.path.exists(WorkPath):  # check the directory is existed or not
