@@ -1,3 +1,4 @@
-XlsxWriter==3.1.9
-streamlit==1.31.0
-xlrd==2.0.1
+XlsxWriter~=3.1.9
+streamlit~=1.31.0
+xlrd~=2.0.1
+openpyxl~=3.1.2

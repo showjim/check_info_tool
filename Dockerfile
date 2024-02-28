@@ -34,4 +34,4 @@ CMD ["streamlit", "run", "check_info_webapp.py"]
 
 # 健康检查
 HEALTHCHECK --interval=5m --timeout=3s \
-  CMD curl -f http://localhost:8501/ || exit 1
+  CMD curl -f http://localhost:8502/ || exit 1

@@ -64,7 +64,7 @@ def main(app):
     # Main UI Components
     st.subheader('Step 1. Config Setting')
     file_path = st.file_uploader("`1. Upload a test program`",
-                                 type=["igxl", "zip"],
+                                 type=["igxl", "zip", "xlsm"],
                                  accept_multiple_files=False)
     if st.button("Upload Test Program"):
         if file_path is not None:

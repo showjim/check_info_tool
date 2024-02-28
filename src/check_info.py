@@ -7,7 +7,7 @@ from src.parse_timing import ParseTIM
 from src.parse_job_list import ParseJobList
 from src.parse_pattern_set import ParsePatternSet
 from src.parse_test_instance import ParseTestInstance
-from src.common import unzip, format_str
+from src.common import unzip, format_str, export_sheets_to_txt
 import collections
 import os
 import re
@@ -72,7 +72,7 @@ class CheckInfo:
         self.pat2inst_dict = {}
         self.progressbarOne = None
 
-    def read_device(self, device_path, power_order_path, pattern_path, platform, text, cycle_mode, progressbarOne):
+    def read_device(self, device_path:str, power_order_path:str, pattern_path:str, platform, text, cycle_mode, progressbarOne):
         self.reset()
         self.text = text
         self.platform = platform
@@ -87,7 +87,12 @@ class CheckInfo:
         if os.path.isdir(device_path):
             self.device_directory = device_path
         else:
-            unzip(device_path, self.device_directory)
+            if device_path.lower().endswith(".igxl") or device_path.lower().endswith(".zip"):
+                unzip(device_path, self.device_directory)
+            elif device_path.lower().endswith(".xlsm"):
+                export_sheets_to_txt(device_path, self.device_directory)
+            else:
+                self.__put_data_log("Error: file extension is not supported.")
             device_name = os.path.join(self.device_directory, os.path.basename(device_path))
             device_name = os.path.splitext(device_name)[0]
             if os.path.isdir(device_name):
