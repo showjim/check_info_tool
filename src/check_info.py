@@ -126,6 +126,7 @@ class CheckInfo:
         self.format_red = work_book.add_format({'bg_color': '#FFC7CE'})
         self.format_yellow = work_book.add_format({'bg_color': '#F7D674'})
         self.format_orange = work_book.add_format({'bg_color': '#FFAA33'})
+        self.format_bold = work_book.add_format({'bold': True})
         self.update_progressbar(0)
         try:
             for flow_name in flow_table_set:
@@ -133,6 +134,7 @@ class CheckInfo:
                 self.work_sheet.outline_settings(True, False, True, False)
                 flow_path = self.device_directory + '/' + flow_name + '.txt'
                 self.__run_each_flow(flow_path)
+                self.excel_file_optimise(self.work_sheet)
             tset_work_sheet = work_book.add_worksheet("PatTsetMap_" + flow_name)
             self.write_dict_to_excel(self.pat2inst_dict, self.tset_dict, tset_work_sheet)
             work_book.close()
@@ -145,6 +147,12 @@ class CheckInfo:
             traceback.print_exc()
             work_book.close()
         return output_name
+
+    def excel_file_optimise(self, worksheet):
+        worksheet.autofilter(0, 0, 0, 100)
+        worksheet.freeze_panes('C2')
+        worksheet.set_row(0, 20, self.format_bold)
+
     def write_dict_to_excel(self, pat2inst_dict, my_dict, worksheet):
         worksheet.write(0, 0, 'Instances')
         worksheet.write(0, 1, 'Pattern')
