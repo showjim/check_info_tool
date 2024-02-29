@@ -31,7 +31,7 @@ class Application:
 
 
 # Main Streamlit App
-def main(app=Application()):
+def main(app=Application):
     st.title(f"Check Info Tool {_VERSION}")
     st.caption('Powered by Streamlit, written by Chao Zhou')
     st.subheader("", divider='rainbow')
