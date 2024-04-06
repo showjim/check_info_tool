@@ -14,11 +14,14 @@ class ParseJobList:
             for line_index, job_line in enumerate(job_list_file):
                 if line_index > 3:
                     line_list = job_line.split('\t')
-                    flow_table_file = line_list[4]
-                    if flow_table_file != '':
-                        self.__job_list_dict[flow_table_file] = get_job_list_content(line_list)
+                    if len(line_list) >= 5:
+                        flow_table_file = line_list[4]
+                        if flow_table_file != '':
+                            self.__job_list_dict[flow_table_file] = get_job_list_content(line_list)
+                        else:
+                            pass
                     else:
-                        pass
+                        print("Warning: No flow table found in this line: " + job_line)
                 else:
                     pass
 
