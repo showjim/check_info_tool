@@ -275,7 +275,7 @@ class CheckInfo:
     def __extract_per_clk(self, pattern_name: str, timing_name: str, category_name: str, selector_name: str):
         # get tset from pattern
         period_val, clk_val = "", ""
-        period_val_list, clk_val_list = [], []
+        period_val_list, clk_val_list, period_val_tsetdict_list = [], [], []
         if self.pattern_path != "":
             if pattern_name in self.tset_dict.keys():
                 tset_name_list = self.tset_dict[pattern_name].keys()
@@ -322,12 +322,15 @@ class CheckInfo:
                 # in case same pattern with diff AC spec, which leads to diff period
                 if pattern_name in self.tset_dict.keys():
                     # if period_val not in self.tset_dict[pattern_name][tset_name]:
-                    period_val = self.tset_dict[pattern_name][tset_name] + "," + period_val
+                    period_val_for_tset_dict = self.tset_dict[pattern_name][tset_name] + "," + period_val
+                else:
+                    period_val_for_tset_dict = period_val
                 period_val_list.append(period_val)
                 clk_val_list.append(clk_val)
-            self.tset_dict[pattern_name] = dict(zip(tset_name_list, period_val_list))
+                period_val_tsetdict_list.append(period_val_for_tset_dict)
+            self.tset_dict[pattern_name] = dict(zip(tset_name_list, period_val_tsetdict_list))
         else:
-            period_val_list, clk_val_list = [""], [""]
+            period_val_list, clk_val_list, period_val_tsetdict_list = [""], [""], [""]
         return period_val_list, clk_val_list
 
     def __pattern_period_clk_process(self, dps_count, write_row_start, flow_table_info, flow_table_directory):
