@@ -7,13 +7,14 @@ class ParseTIM:
     def read_timing(self, timing_path:str, platform:str):
         with open(timing_path, 'r') as timing_file:
             for line_index, timing_line in enumerate(timing_file):
-                if len(timing_line) == 0 or timing_line == "\n":
+                if (line_index >= 7 and len(timing_line.strip()) == 0) or timing_line == "\n":
                     break
                 line_list = timing_line.split('\t')
                 if "UltraFLEX" in platform:
                     if line_index >= 7:
                         tmp_tset = line_list[1].upper()
-                        self.__clk_dic[tmp_tset] = {}
+                        if tmp_tset not in self.__clk_dic.keys():
+                            self.__clk_dic[tmp_tset] = {}
                         period = line_list[2]
                         period = str(period).replace('=', '')
                         if tmp_tset not in self.__timing_period.keys():
@@ -25,7 +26,8 @@ class ParseTIM:
                 elif "J750" in platform:
                     if line_index >= 6:
                         tmp_tset = line_list[1].upper()
-                        self.__clk_dic[tmp_tset] = {}
+                        if tmp_tset not in self.__clk_dic.keys():
+                            self.__clk_dic[tmp_tset] = {}
                         period = line_list[2]
                         period = str(period).replace('=', '')
                         if tmp_tset not in self.__timing_period.keys():
