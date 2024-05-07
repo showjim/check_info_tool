@@ -56,6 +56,9 @@ def main(app=Application):
 
     # Sidebar for menu options
     with st.sidebar:
+        st.header("Other Tools")
+        st.page_link("https://taishanstone:8501", label="Pattern Auto Edit Tool", icon="1️⃣")
+        st.page_link("https://taishanstone:8503", label="Shmoo Detect Tool", icon="2️⃣")
         st.header("Help")
         if st.button("About"):
             st.info(
