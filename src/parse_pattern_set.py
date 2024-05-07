@@ -39,7 +39,8 @@ class ParsePatternSet:
                         main_pattern_name = line_list[main_pattern_index] #.split('\\')[-1]
                         main_pattern_name_group = re.search(pattern, main_pattern_name)
                         if main_pattern_name_group is not None:
-                            main_pattern_name = main_pattern_name_group.group(1)
+                            # main_pattern_name = main_pattern_name_group.group(1)
+                            main_pattern_name = main_pattern_name # add this to ignore "_X\d_" regexp search
                             if pattern_file_path != '':
                                 if False:
                                     path_list_pre = re.split(r'[/\\]', pattern_file_path)
