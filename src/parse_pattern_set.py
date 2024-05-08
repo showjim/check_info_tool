@@ -1,4 +1,4 @@
-import os, re
+import os, re, copy
 from subprocess import run
 
 
@@ -121,7 +121,16 @@ class ParsePatternSet:
         return self.__cycle_dict
 
     def get_pattern_set_info(self):
-        return self.__pattern_set_dict
+        result_dict = {}
+        result_dict = copy.deepcopy(self.__pattern_set_dict)
+        for patset, pat_list in self.__pattern_set_dict.items():
+            for i, pat in enumerate(pat_list):
+                if (not pat.upper().endswith("PATX")) and (not pat.upper().endswith("PAT")):
+                    if pat.upper() in result_dict.keys():
+                        result_dict[patset][i] = result_dict[pat.upper()]
+                    else:
+                        print("Error: Patset found item without pattern definition: " + pat)
+        return result_dict #self.__pattern_set_dict
 
     def get_pattern_tset(self):
         return self.__tset_name
