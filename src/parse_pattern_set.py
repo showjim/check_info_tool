@@ -1,4 +1,4 @@
-import os, re, copy
+import os, re
 from subprocess import run
 
 
