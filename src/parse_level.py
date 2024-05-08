@@ -11,7 +11,7 @@ class ParsePinLevel:
                     line_list = level_line.split('\t')
                     if line_list[1] == '':
                         break
-                    elif line_list[3] == 'VMain' or line_list[3] == 'Vps':
+                    elif line_list[3].upper() == 'VMAIN' or line_list[3].upper() == 'VPS':
                         pin_value = re.search(re.compile(r'=?(\S+)'), line_list[4]).group(1)
                         self.__pin_level_dict[line_list[1].upper()] = pin_value.upper()
                     else:

@@ -540,29 +540,37 @@ class CheckInfo:
                                                       glob_spec_name_temp.replace(' ', '%20') + '.txt')
             glob_spec_name = glob_spec_name if os.path.exists(glob_spec_name) else glob_spec_name_replace_space
 
-            pattern_set_name_temp = self.job_list_dict[pre_flow_name]['PatternSet']
-            pattern_set_name = os.path.join(flow_table_directory, pattern_set_name_temp + '.txt')
-            pattern_set_name_replace_space = os.path.join(flow_table_directory,
-                                                          pattern_set_name_temp.replace(' ', '%20') + '.txt')
-            pattern_set_name = pattern_set_name if os.path.exists(pattern_set_name) else pattern_set_name_replace_space
+            pattern_set_name_list = self.job_list_dict[pre_flow_name]['PatternSet']
+            pattern_set_name_list = [os.path.join(flow_table_directory, pattern_set_name.replace(' ', '%20') + '.txt') for pattern_set_name in pattern_set_name_list if pattern_set_name_list]
+
+            # pattern_set_name = os.path.join(flow_table_directory, pattern_set_name_temp + '.txt')
+            # pattern_set_name_replace_space = os.path.join(flow_table_directory,
+            #                                               pattern_set_name_temp.replace(' ', '%20') + '.txt')
+            # pattern_set_name = pattern_set_name if os.path.exists(pattern_set_name) else pattern_set_name_replace_space
+
             test_instance_list = self.job_list_dict[pre_flow_name]['TestInstanceList']
             test_instance_list = [os.path.join(flow_table_directory, test_instance_name.replace(' ', '%20') + '.txt') for test_instance_name
                                   in
                                   test_instance_list if test_instance_list]
             self.update_progressbar(2)
 
-            # self.pattern_set_dict = {}
-            if self.last_flow_info.pattern_set_name != pattern_set_name: # and LastFlowInfo.pattern_set_name is not None:
-                pps = ParsePatternSet()
-                try:
-                    pps.read_pattern_set(pattern_set_name, self.pattern_path, self.platform)
-                    self.pattern_set_dict = pps.get_pattern_set_info()
-                    self.pattern_cycle_dict = pps.get_pattern_cycle_info()
-                    self.last_flow_info.pattern_set_name = pattern_set_name
-                except Exception as e:
-                    self.__put_data_log("Warning: cannot read PatternSet, please check it!")
-            else:
-                pass
+            # Process pattern set sheet(s)
+            pps = ParsePatternSet()
+            if pattern_set_name_list:
+                for pattern_set_name in pattern_set_name_list:
+                    if self.last_flow_info.pattern_set_name != pattern_set_name: # and LastFlowInfo.pattern_set_name is not None:
+                        # pps = ParsePatternSet()
+                        try:
+                            pps.read_pattern_set(pattern_set_name, self.pattern_path, self.platform)
+                            # self.pattern_set_dict = pps.get_pattern_set_info()
+                            # self.pattern_cycle_dict = pps.get_pattern_cycle_info()
+                            self.last_flow_info.pattern_set_name = pattern_set_name
+                        except Exception as e:
+                            self.__put_data_log("Warning: cannot read PatternSet, please check it!")
+                    else:
+                        pass
+            self.pattern_set_dict = pps.get_pattern_set_info()
+            self.pattern_cycle_dict = pps.get_pattern_cycle_info()
             self.update_progressbar(3)
 
             pti = ParseTestInstance()

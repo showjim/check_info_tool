@@ -3,7 +3,7 @@ import collections
 
 def get_job_list_content(line_list):
     job_list_info = {'TestInstanceList': line_list[3].split(','), 'DC Spec': line_list[6], 'AC Spec': line_list[5],
-                     'PatternSet': line_list[7], 'Global Spec': 'Global Specs'}
+                     'PatternSet': line_list[7].split(','), 'Global Spec': 'Global Specs'}
     return job_list_info
 
 
