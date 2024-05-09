@@ -132,20 +132,69 @@ class ParsePatternSet:
     #                     print("Error: Patset found item without pattern definition: " + pat)
     #     return result_dict #self.__pattern_set_dict
 
+    # def get_pat_path(self, pat_path:str):
+    #     result = ""
+    #     upper_pat_path = pat_path.upper()
+    #     if not (upper_pat_path.endswith("PATX") or upper_pat_path.endswith("PAT") or
+    #             upper_pat_path.endswith("PATX.GZ") or upper_pat_path.endswith("PAT.GZ")):
+    #         if upper_pat_path in self.__pattern_set_dict:
+    #             new_pat_path = self.__pattern_set_dict[upper_pat_path]
+    #             result = self.get_pat_path(new_pat_path)
+    #         else:
+    #             result = "No Path Definition Found!"
+    #             raise ValueError(f"Error: Patset found item without pattern definition: {pat_path}")
+    #     else:
+    #         result = pat_path
+    #     return result
+
+    def get_pat_path(self, pat_path: str) -> str:
+        """
+        Resolve the given pattern file path to a defined path or raise an error if undefined.
+
+        Args:
+        pat_path (str): The pattern file path to resolve.
+
+        Returns:
+        str: The resolved pattern file path.
+
+        Raises:
+        ValueError: If no path definition is found for the given pattern file path.
+        """
+        # Convert path to uppercase to standardize comparison
+        upper_pat_path = pat_path.upper()
+
+        # Define valid file extensions
+        valid_extensions = ("PATX", "PAT", "PATX.GZ", "PAT.GZ")
+
+        # Check if path ends with a valid extension
+        if upper_pat_path.endswith(valid_extensions):
+            return pat_path
+
+        # Resolve path using a dictionary if not ending with a valid extension
+        if upper_pat_path in self.__pattern_set_dict:
+            new_pat_path = self.__pattern_set_dict[upper_pat_path]
+            return self.get_pat_path(new_pat_path)
+
+        # Raise an error if no valid path is found
+        raise ValueError(f"Error: Patset found item without pattern definition: {pat_path}")
+
     def get_pattern_set_info(self):
         result_dict = {}
         for patset, pat_list in self.__pattern_set_dict.items():
             result_dict[patset] = []
             for pat in pat_list:
-                upper_pat = pat.upper()
-                if not (upper_pat.endswith("PATX") or upper_pat.endswith("PAT")):
-                    if upper_pat in self.__pattern_set_dict:
-                        result_dict[patset].append(self.__pattern_set_dict[upper_pat])
-                    else:
-                        # 这里可以抛出异常或者记录日志
-                        raise ValueError(f"Error: Patset '{patset}' found item without pattern definition: {pat}")
-                else:
-                    result_dict[patset].append(pat)  # 保持原始值
+                pat_content = self.get_pat_path(pat)
+                result_dict[patset].append(pat_content)
+
+                # upper_pat = pat.upper()
+                # if not (upper_pat.endswith("PATX") or upper_pat.endswith("PAT")):
+                #     if upper_pat in self.__pattern_set_dict:
+                #         result_dict[patset].append(self.__pattern_set_dict[upper_pat])
+                #     else:
+                #         # 这里可以抛出异常或者记录日志
+                #         raise ValueError(f"Error: Patset '{patset}' found item without pattern definition: {pat}")
+                # else:
+                #     result_dict[patset].append(pat)  # 保持原始值
         return result_dict
 
     def get_pattern_tset(self):
