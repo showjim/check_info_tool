@@ -37,11 +37,6 @@ class ParsePatternSet:
                             main_pattern_index = 5
                         # main_pattern_index = 4 if self.__pattern_set_version == '2.3' else 5
                         main_pattern_name = line_list[main_pattern_index] #.split('\\')[-1]
-
-                        # in case patset reference a patset
-                        if main_pattern_name.upper() in self.__pattern_set_dict.keys():
-                            main_pattern_name = self.__pattern_set_dict[main_pattern_name.upper()]
-
                         main_pattern_name_group = re.search(pattern, main_pattern_name)
                         if main_pattern_name_group is not None:
                             # main_pattern_name = main_pattern_name_group.group(1)
