@@ -1,5 +1,6 @@
 import os, re
 from subprocess import run
+from typing import List
 
 
 class ParsePatternSet:
@@ -142,7 +143,25 @@ class ParsePatternSet:
     #         result = pat_path
     #     return result
 
-    def get_pat_path(self, pat_path: str) -> str:
+    def contains_any_substring(self, s, substrings):
+        return any(sub in s for sub in substrings)
+
+    def truncate_after_substring(self, s, substrings):
+        # 转换为小写以忽略大小写
+        lower_s = s.lower()
+
+        # 查找每个子字符串的位置，并找到第一个匹配的位置
+        first_occurrence = len(s)  # 初始化为字符串的长度，如果没有找到匹配，则返回整个字符串
+        for sub in substrings:
+            pos = lower_s.find(sub.lower())
+            if pos != -1 and pos < first_occurrence - len(sub):
+                first_occurrence = pos + len(sub)
+                break
+
+        # 如果找到子字符串，则截断
+        return s[:first_occurrence] if first_occurrence != len(s) else s
+
+    def get_pat_path(self, pat_path: str) -> List[str]:
         """
         Resolve the given pattern file path to a defined path or raise an error if undefined.
 
@@ -159,16 +178,26 @@ class ParsePatternSet:
         upper_pat_path = pat_path.upper()
 
         # Define valid file extensions
-        valid_extensions = ("PATX", "PAT", "PATX.GZ", "PAT.GZ")
+        valid_extensions = (".PATX.GZ", ".PAT.GZ", ".PATX", ".PAT")
+        # # 示例字符串
+        # test_strings = ["example.PAT", "filename.PATX.GZ", "data.txt", "archive.PAT.GZ", "some.PATX:module-name"]
 
         # Check if path ends with a valid extension
         if upper_pat_path.endswith(valid_extensions):
-            return pat_path
+            return [pat_path]
+
+        # check if path contain a valid extension
+        if self.contains_any_substring(upper_pat_path, valid_extensions):
+            new_pat_path = self.truncate_after_substring(pat_path, valid_extensions)
+            return [new_pat_path]
 
         # Resolve path using a dictionary if not ending with a valid extension
         if upper_pat_path in self.__pattern_set_dict:
-            new_pat_path = self.__pattern_set_dict[upper_pat_path]
-            return self.get_pat_path(new_pat_path)
+            result = []
+            new_pat_path_list = self.__pattern_set_dict[upper_pat_path]
+            for pat in new_pat_path_list:
+                result += self.get_pat_path(pat)
+            return result
 
         # Raise an error if no valid path is found
         raise ValueError(f"Error: Patset found item without pattern definition: {pat_path}")
@@ -176,10 +205,10 @@ class ParsePatternSet:
     def get_pattern_set_info(self):
         result_dict = {}
         for patset, pat_list in self.__pattern_set_dict.items():
-            result_dict[patset] = []
+            pat_content_list = []
             for pat in pat_list:
-                pat_content = self.get_pat_path(pat)
-                result_dict[patset].append(pat_content)
+                pat_content_list += self.get_pat_path(pat)
+            result_dict[patset] = pat_content_list
 
                 # upper_pat = pat.upper()
                 # if not (upper_pat.endswith("PATX") or upper_pat.endswith("PAT")):
