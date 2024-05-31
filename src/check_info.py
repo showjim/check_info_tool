@@ -49,6 +49,7 @@ class CheckInfo:
         self.pat2inst_dict ={}
         self.progressbarOne = None
         self.power_list = []
+        self.sort_bin_dscrp = []
 
     def reset(self):
         self.power_order_path = ''
@@ -73,6 +74,7 @@ class CheckInfo:
         self.pat2inst_dict = {}
         self.progressbarOne = None
         self.power_list = []
+        self.sort_bin_dscrp = []
 
     def read_device(self, device_path:str, power_order_path:str, pattern_path:str, platform, text, cycle_mode, progressbarOne):
         self.reset()
@@ -138,7 +140,9 @@ class CheckInfo:
                 self.__run_each_flow(flow_path)
                 self.excel_file_optimise(self.work_sheet)
             tset_work_sheet = work_book.add_worksheet("PatTsetMap_" + flow_name)
-            self.write_dict_to_excel(self.pat2inst_dict, self.tset_dict, tset_work_sheet)
+            self.write_pat_tset_map(self.pat2inst_dict, self.tset_dict, tset_work_sheet)
+            bin_descrp_sheet = work_book.add_worksheet("SortBinDescrp") # + flow_name)
+            self.write_bin_descrp(bin_descrp_sheet)
             work_book.close()
             self.__put_data_log('Output file path is: ' + output_name)
             self.__put_data_log('Execution successful!!!')
@@ -155,7 +159,7 @@ class CheckInfo:
         worksheet.freeze_panes('C2')
         worksheet.set_row(0, 20, self.format_bold)
 
-    def write_dict_to_excel(self, pat2inst_dict, my_dict, worksheet):
+    def write_pat_tset_map(self, pat2inst_dict, my_dict, worksheet):
         worksheet.write(0, 0, 'Instances')
         worksheet.write(0, 1, 'Pattern')
         worksheet.write(0, 2, 'Tset_0')
@@ -178,6 +182,12 @@ class CheckInfo:
             worksheet.write_row(row_num, 2, tmp_list)
             row_num += 1
             self.update_progressbar(90 + 10*row_num/len(my_dict))
+
+    def write_bin_descrp(self, worksheet):
+        for i in range(len(self.sort_bin_dscrp)):
+            line = self.sort_bin_dscrp[i]
+            worksheet.write_row(i, 0, line)
+        worksheet.conditional_format(0, 0, len(self.sort_bin_dscrp)-1, 0, {'type':   'duplicate', 'format':  self.format_red})
 
     def __put_data_log(self, data_log):
         self.text(data_log)
@@ -636,8 +646,12 @@ class CheckInfo:
             self.update_progressbar(7)
 
             self.__init()
+            self.sort_bin_dscrp = []
             for flow_table_index, flow_table_info in enumerate(flow_table_info_list):
                 test_suite_name = flow_table_info['Parameter']
+                test_sort_bin = flow_table_info["SortBin"]
+                if test_sort_bin != "":
+                    self.sort_bin_dscrp.append([test_sort_bin, test_suite_name])
                 flow_table_info_list[flow_table_index]["write_row_start"] = self.write_row_index
                 if test_suite_name in self.test_instance_dict.keys():
                     self.write_row_index += len(self.test_instance_dict[test_suite_name])
