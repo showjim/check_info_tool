@@ -48,6 +48,7 @@ class CheckInfo:
         self.tset_dict = {}
         self.pat2inst_dict ={}
         self.progressbarOne = None
+        self.power_list = []
 
     def reset(self):
         self.power_order_path = ''
@@ -71,6 +72,7 @@ class CheckInfo:
         self.tset_dict = {}
         self.pat2inst_dict = {}
         self.progressbarOne = None
+        self.power_list = []
 
     def read_device(self, device_path:str, power_order_path:str, pattern_path:str, platform, text, cycle_mode, progressbarOne):
         self.reset()
@@ -447,7 +449,7 @@ class CheckInfo:
         test_suite_name = flow_table_info['Parameter']
         if test_suite_name in self.test_instance_dict.keys():
             for single_inst in self.test_instance_dict[test_suite_name]:
-                dps_index = self.print_inst_info_col_cnt
+                dps_index_start = self.print_inst_info_col_cnt
                 dps_count = 0
                 if single_inst['DC Category'] != '':
                     level_sheet_name = single_inst['PinLevel']
@@ -481,18 +483,26 @@ class CheckInfo:
                             power_pin_alias_dict[power_pin_name] = power_pin_name
 
                     for pin_level_name, pin_level_info in pin_level_dict.items():
-                        self.work_sheet.write(0, dps_index, power_pin_alias_dict[pin_level_name])
-                        self.work_sheet.set_column(dps_index, dps_index, 15)
+                        cur_power_pin = power_pin_alias_dict[pin_level_name]
+                        if cur_power_pin in self.power_list:
+                            # get index of power pin
+                            dps_index = dps_index_start + self.power_list.index(cur_power_pin)
+                        else:
+                            self.power_list.append(cur_power_pin)
+                            dps_index = dps_index_start + len(self.power_list) - 1
+                            self.work_sheet.write(0, dps_index, cur_power_pin)
+                            self.work_sheet.set_column(dps_index, dps_index, 15)
                         power_value = self.__spec_calculation(pin_level_info, self.dc_spec_dict, category_name, selector_name)
                         power_value = round(float(eval(format_str(power_value))), 5)
                         if power_value == 0:
                             self.work_sheet.write(flow_table_index + 1, dps_index, str(power_value), self.format_orange)
                         else:
                             self.work_sheet.write(flow_table_index + 1, dps_index, str(power_value))
-                        dps_index = dps_index + 1
+
                 else:
                     pass
                 flow_table_index += 1
+            dps_count = len(self.power_list)
         else:
             self.__put_data_log("Info: cannot found " + test_suite_name + " in Test Instance, please check.")
             print("Info: cannot found " + test_suite_name + " in Test Instance, please check.")
@@ -633,6 +643,7 @@ class CheckInfo:
                     self.write_row_index += len(self.test_instance_dict[test_suite_name])
                 self.update_progressbar(8 + 10 * flow_table_index/len(flow_table_info_list))
 
+            self.power_list = []
             for flow_table_index, flow_table_info in enumerate(flow_table_info_list):
                 write_row = flow_table_info_list[flow_table_index]["write_row_start"]
                 try:
