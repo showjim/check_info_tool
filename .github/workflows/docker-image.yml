@@ -39,7 +39,7 @@ jobs:
       uses: docker/build-push-action@v5
       with:
           push: true
-          tags:
+          tags: |
             showjimzc/checkinfotool:${{ env.APP_VERSION }}
             showjimzc/checkinfotool:latest
       # run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
