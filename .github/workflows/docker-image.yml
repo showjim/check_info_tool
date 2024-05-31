@@ -26,9 +26,11 @@ jobs:
     - name: Generate App Version
       run: echo APP_VERSION=`git describe --tags --always` >> $GITHUB_ENV
     # 构建 Docker 并推送到 Docker hub
-    - name: Build and push the Docker image
+    - name: Build and push the Docker image - 1
       uses: docker/build-push-action@v5
       with:
           push: true
-          tags: showjimzc/checkinfotool:${{ env.APP_VERSION }}
+          tags:
+            showjimzc/checkinfotool:${{ env.APP_VERSION }}
+            showjimzc/checkinfotool:latest
       # run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
