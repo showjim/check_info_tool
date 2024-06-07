@@ -5,10 +5,10 @@ import openpyxl
 def unzip(file_name, path):
     unzip_format = zipfile.is_zipfile(file_name)
     if unzip_format:
-        zip_file = zipfile.ZipFile(file_name)
-        for names in zip_file.namelist():
-            zip_file.extract(names, path + '/')
-        zip_file.close()
+        with zipfile.ZipFile(file_name, "r") as zip_file:
+            for file_info in zip_file.infolist():
+                file_info.filename = os.path.basename(file_info.filename)
+                zip_file.extract(file_info, path + '/')
     else:
         print('Need Zip Format, Please Check!!!')
 
