@@ -139,7 +139,7 @@ class CheckInfo:
                 flow_path = self.device_directory + '/' + flow_name + '.txt'
                 self.__run_each_flow(flow_path)
                 self.excel_file_optimise(self.work_sheet)
-            tset_work_sheet = work_book.add_worksheet("PatTsetMap_" + flow_name)
+            tset_work_sheet = work_book.add_worksheet("PatTsetMap_" + flow_name[0:20])
             self.write_pat_tset_map(self.pat2inst_dict, self.tset_dict, tset_work_sheet)
             bin_descrp_sheet = work_book.add_worksheet("SortBinDescrp") # + flow_name)
             self.write_bin_descrp(bin_descrp_sheet)
