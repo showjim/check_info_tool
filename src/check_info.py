@@ -143,6 +143,8 @@ class CheckInfo:
             self.write_pat_tset_map(self.pat2inst_dict, self.tset_dict, tset_work_sheet)
             bin_descrp_sheet = work_book.add_worksheet("SortBinDescrp") # + flow_name)
             self.write_bin_descrp(bin_descrp_sheet)
+            inst_para_check_sheet = work_book.add_worksheet("InstParametersCheck")
+            self.write_inst_para(inst_para_check_sheet)
             work_book.close()
             self.__put_data_log('Output file path is: ' + output_name)
             self.__put_data_log('Execution successful!!!')
@@ -190,9 +192,30 @@ class CheckInfo:
         worksheet.conditional_format(0, 0, len(self.sort_bin_dscrp)-1, 0, {'type':   'duplicate', 'format':  self.format_red})
 
     def write_inst_para(self, worksheet):
-        for i in range(len(self.test_instance_dict)):
-            line = self.test_instance_dict[i]
-            worksheet.write_row(i, 0, line)
+        row_num = 0
+        for key, value in self.test_instance_dict.items():
+            if row_num == 0:
+                worksheet.write_row(row_num, 1, value[0].keys())
+                row_num += 1
+            worksheet.write(row_num, 0, key)
+            for i in range(len(value)):
+                k_list = list(value[i].keys())
+                for j in range(len(k_list)):
+                    k = k_list[j]
+                    v = value[i][k]
+                    if k == 'ArgDetails':
+                        worksheet.write_row(row_num, j + 1, v)
+                        worksheet.conditional_format(row_num, j + 1, row_num, j + 1 + len(v),
+                                                     {'type': 'blanks',
+                                                      'format': self.format_red})
+                    else:
+                        worksheet.write(row_num, j + 1, v)
+            row_num += 1
+
+        worksheet.autofilter(0, 0, 0, 100)
+        worksheet.freeze_panes('B2')
+        worksheet.set_row(0, 20, self.format_bold)
+
 
     def __put_data_log(self, data_log):
         self.text(data_log)
