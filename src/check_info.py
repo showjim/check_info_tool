@@ -189,6 +189,11 @@ class CheckInfo:
             worksheet.write_row(i, 0, line)
         worksheet.conditional_format(0, 0, len(self.sort_bin_dscrp)-1, 0, {'type':   'duplicate', 'format':  self.format_red})
 
+    def write_inst_para(self, worksheet):
+        for i in range(len(self.test_instance_dict)):
+            line = self.test_instance_dict[i]
+            worksheet.write_row(i, 0, line)
+
     def __put_data_log(self, data_log):
         self.text(data_log)
         # self.text.insert(tk.END, data_log + '\n')

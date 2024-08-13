@@ -70,8 +70,10 @@ class ParseTestInstance:
                         pass
 
     def __get_instance_content(self, line_list, pattern_info):
+        argList = line_list[14].split(',')
         instance_info = {'DC Category': line_list[5], 'DC Selector': line_list[6], 'TimeSet': line_list[9],
-                         'AC Category': line_list[7], 'AC Selector': line_list[8], 'PinLevel': line_list[11], 'Pattern': pattern_info}
+                         'AC Category': line_list[7], 'AC Selector': line_list[8], 'PinLevel': line_list[11],
+                         'Pattern': pattern_info, 'ArgList': line_list[14], 'ArgDetails': line_list[15: 15+len(argList)]}
         return instance_info
 
     def get_instance_info(self):
