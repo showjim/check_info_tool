@@ -125,7 +125,7 @@ class CheckInfo:
     def run(self, flow_table_set, work_dir="./"):
         time = datetime.datetime.now()
         current_time = str(datetime.date.today()) + "__" + str(time.hour) + str(time.minute) + str(time.second)
-        output_name = os.path.join(work_dir, 'CheckInfo_' + current_time + '.xlsx')
+        output_name = os.path.join(work_dir, 'CheckInfo_' + current_time + '.xlsm')
         work_book = xlsxwriter.Workbook(output_name)
         self.format_red = work_book.add_format({'bg_color': '#FFC7CE'})
         self.format_yellow = work_book.add_format({'bg_color': '#F7D674'})
@@ -145,6 +145,7 @@ class CheckInfo:
             self.write_bin_descrp(bin_descrp_sheet)
             inst_para_check_sheet = work_book.add_worksheet("InstParametersCheck")
             self.write_inst_para(inst_para_check_sheet)
+            work_book.add_vba_project('./bin/vbaProject.bin')
             work_book.close()
             self.__put_data_log('Output file path is: ' + output_name)
             self.__put_data_log('Execution successful!!!')
@@ -195,26 +196,25 @@ class CheckInfo:
         row_num = 0
         for key, value in self.test_instance_dict.items():
             if row_num == 0:
-                worksheet.write_row(row_num, 1, value[0].keys())
+                worksheet.write(row_num, 0, 'Comment')
+                worksheet.write(row_num, 1, 'Test Instance')
+                worksheet.write_row(row_num, 2, value[0].keys())
                 row_num += 1
-            worksheet.write(row_num, 0, key)
+            worksheet.write(row_num, 1, key)
             for i in range(len(value)):
                 k_list = list(value[i].keys())
                 for j in range(len(k_list)):
                     k = k_list[j]
                     v = value[i][k]
                     if k == 'ArgDetails':
-                        worksheet.write_row(row_num, j + 1, v)
-                        worksheet.conditional_format(row_num, j + 1, row_num, j + len(v),
+                        worksheet.write_row(row_num, j + 2, v) #write info from column 2
+                        worksheet.conditional_format(row_num, j + 2, row_num, j + len(v) + 1,
                                                      {'type': 'blanks',
                                                       'format': self.format_red})
                     else:
-                        worksheet.write(row_num, j + 1, v)
+                        worksheet.write(row_num, j + 2, v) #write info from column 2
             row_num += 1
-
-        worksheet.autofilter(0, 0, 0, 100)
-        worksheet.freeze_panes('B2')
-        worksheet.set_row(0, 20, self.format_bold)
+        self.excel_file_optimise(worksheet)
 
 
     def __put_data_log(self, data_log):
