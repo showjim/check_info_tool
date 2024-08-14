@@ -205,7 +205,7 @@ class CheckInfo:
                     v = value[i][k]
                     if k == 'ArgDetails':
                         worksheet.write_row(row_num, j + 1, v)
-                        worksheet.conditional_format(row_num, j + 1, row_num, j + 1 + len(v),
+                        worksheet.conditional_format(row_num, j + 1, row_num, j + len(v),
                                                      {'type': 'blanks',
                                                       'format': self.format_red})
                     else:
