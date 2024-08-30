@@ -97,7 +97,7 @@ class ParsePatternSet:
             pattern_path = '/'.join(path_full)
             if os.path.exists(pattern_path):
                 exract_file_path = pattern_folder_path + "/pattern_tset.txt"
-                run('patinfo ' + '"' + pattern_path + '"' + ' -tset > ' + exract_file_path, shell=True)
+                run('patinfo ' + '"' + pattern_path + '"' + ' -tset > "' + exract_file_path + '"', shell=True)
                 # parse pattern_tset.txt
 
                 tset_pattern = re.compile("\t(\S+) {1,2}\d\n") #("Tset Name Table:\s+----------------(\s+(\S+))+")
