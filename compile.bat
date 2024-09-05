@@ -1,0 +1,1 @@
+pyinstaller --icon=.\IMG\icon.ico --onefile -w .\executor.py
