@@ -645,6 +645,8 @@ class CheckInfo:
                 pds = ParseDCSpec()
                 pds.read_dc_spec(dc_spec_name, self.platform)
                 self.dc_spec_dict = pds.get_dc_info()
+                dc_spec_version = pds.get_spec_version()
+                self.spec_version = dc_spec_version
                 self.last_flow_info.dc_spec_name = dc_spec_name
             else:
                 pass
