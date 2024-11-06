@@ -662,13 +662,14 @@ class CheckInfo:
                 pass
             self.update_progressbar(6)
 
-            if self.last_flow_info.ac_spec_name != ac_spec_name:
-                pas = ParseACSpec()
-                pas.read_ac_spec(ac_spec_name, self.platform)
-                self.ac_spec_dict = pas.get_ac_info()
-                ac_spec_version = pas.get_spec_version()
-                self.spec_version = ac_spec_version
-                self.last_flow_info.ac_spec_name = ac_spec_name
+            if self.last_flow_info.ac_spec_name is not None:
+                if self.last_flow_info.ac_spec_name != ac_spec_name:
+                    pas = ParseACSpec()
+                    pas.read_ac_spec(ac_spec_name, self.platform)
+                    self.ac_spec_dict = pas.get_ac_info()
+                    ac_spec_version = pas.get_spec_version()
+                    self.spec_version = ac_spec_version
+                    self.last_flow_info.ac_spec_name = ac_spec_name
             else:
                 pass
             self.update_progressbar(7)
