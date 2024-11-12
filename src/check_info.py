@@ -664,7 +664,7 @@ class CheckInfo:
                 pass
             self.update_progressbar(6)
 
-            if self.last_flow_info.ac_spec_name is not None:
+            if ac_spec_name is not None:
                 if self.last_flow_info.ac_spec_name != ac_spec_name:
                     pas = ParseACSpec()
                     pas.read_ac_spec(ac_spec_name, self.platform)

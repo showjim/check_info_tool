@@ -1,1 +1,1 @@
-pyinstaller --icon=IMG\icon.ico --onefile -w --name=Check_Info_Tool executor.py
+pyinstaller --icon=IMG\icon.ico -w --name=Check_Info_Tool executor.py
