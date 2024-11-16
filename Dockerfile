@@ -1,10 +1,4 @@
-# 使用 buildx 时，您可以在这里指定目标平台
-# 但是如果您直接使用 docker build 命令，这一行应该被注释掉或删除
-# FROM --platform=linux/amd64 python:3.8
-
-# 由于您正在使用 M1 Mac，我们将使用 buildx 来构建镜像
-# 因此，您不需要在 Dockerfile 中指定平台
-FROM python:3.9-slim
+FROM python:3.10-slim
 
 # 设置工作目录
 WORKDIR /app
