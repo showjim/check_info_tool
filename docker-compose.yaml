@@ -9,4 +9,4 @@ services:
       - /home/jerry/Output:/app/Output
     restart: always
     ports:
-      - 8501:8502
+      - 8502:8501
