@@ -2,7 +2,6 @@ services:
   CheckInfo:
     image: showjimzc/checkinfotool:latest
     container_name: checkInfoTool
-    network_mode: bridge
     environment:
       - TZ=Asia/Shanghai
     volumes:
