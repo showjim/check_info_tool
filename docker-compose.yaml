@@ -1,0 +1,13 @@
+services:
+  mi-gpt:
+    image: showjimzc/checkinfotool:latest
+    container_name: checkInfoTool
+    network_mode: bridge
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - /home/jerry/workDir:/app/workDir
+      - /home/jerry/Output:/app/Output
+    restart: always
+    ports:
+      - 8502:8501
