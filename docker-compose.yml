@@ -1,6 +1,7 @@
 services:
   CheckInfo:
     image: showjimzc/checkinfotool:latest
+    pull_policy: always
     container_name: checkInfoTool
     environment:
       - TZ=Asia/Shanghai
